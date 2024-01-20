@@ -1,41 +1,55 @@
-package dev.cosgy.jmusicbot.util;
+/*
+ *  Copyright 2024 Cosgy Dev (info@cosgy.dev).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package dev.cosgy.jmusicbot.util
 
-import com.jagrosh.jdautilities.command.CommandEvent;
-import com.jagrosh.jdautilities.command.CommandListener;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jagrosh.jdautilities.command.CommandEvent
+import com.jagrosh.jdautilities.command.CommandListener
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-import java.util.HashMap;
-
-public class LastSendTextChannel implements CommandListener {
+object LastSendTextChannel : CommandListener {
     // ギルドIDでテキストチャンネルのIDを持ってきます。
-    private static final HashMap<Long, Long> textChannel = new HashMap<>();
-    static Logger log = LoggerFactory.getLogger("LastSendTextChannel");
+    private val textChannel = HashMap<Long, Long>()
+    var log: Logger = LoggerFactory.getLogger("LastSendTextChannel")
 
-    public static void SetLastTextId(CommandEvent event) {
-        textChannel.put(event.getGuild().getIdLong(), event.getTextChannel().getIdLong());
+    @JvmStatic
+    fun SetLastTextId(event: CommandEvent) {
+        textChannel[event.guild.idLong] = event.textChannel.idLong
     }
 
-    public static long GetLastTextId(long guildId) {
-        long id;
-        if (textChannel.containsKey(guildId)) {
-            id = textChannel.get(guildId);
+    fun GetLastTextId(guildId: Long): Long {
+        val id = if (textChannel.containsKey(guildId)) {
+            textChannel[guildId]!!
         } else {
-            id = 0;
+            0
         }
-        return id;
+        return id
     }
 
-    public static void SendMessage(Guild guild, String message) {
-        log.debug("メッセージを送信します。");
-        long textId = GetLastTextId(guild.getIdLong());
-        if (textId == 0) {
-            log.debug("チャンネルが保存されていなかったため、メッセージを送信できませんでした。");
-            return;
+    @JvmStatic
+    fun SendMessage(guild: Guild, message: String?) {
+        log.debug("メッセージを送信します。")
+        val textId = GetLastTextId(guild.idLong)
+        if (textId == 0L) {
+            log.debug("チャンネルが保存されていなかったため、メッセージを送信できませんでした。")
+            return
         }
-        MessageChannel channel = guild.getTextChannelById(textId);
-        channel.sendMessage(message).queue();
+        val channel: MessageChannel? = guild.getTextChannelById(textId)
+        channel!!.sendMessage(message!!).queue()
     }
 }

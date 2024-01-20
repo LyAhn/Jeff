@@ -1,150 +1,157 @@
 /*
- * Copyright 2018 John Grosh (jagrosh).
+ *  Copyright 2024 Cosgy Dev (info@cosgy.dev).
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *        http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *   Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
-package dev.cosgy.jmusicbot.slashcommands;
+package dev.cosgy.jmusicbot.slashcommands
 
-import com.jagrosh.jdautilities.command.CommandEvent;
-import com.jagrosh.jdautilities.command.SlashCommand;
-import com.jagrosh.jdautilities.command.SlashCommandEvent;
-import com.jagrosh.jmusicbot.Bot;
-import com.jagrosh.jmusicbot.audio.AudioHandler;
-import com.jagrosh.jmusicbot.settings.Settings;
-import dev.cosgy.jmusicbot.util.MaintenanceInfo;
-import net.dv8tion.jda.api.entities.GuildVoiceState;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
-import net.dv8tion.jda.api.exceptions.PermissionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.text.ParseException;
+import com.jagrosh.jdautilities.command.CommandEvent
+import com.jagrosh.jdautilities.command.SlashCommand
+import com.jagrosh.jdautilities.command.SlashCommandEvent
+import com.jagrosh.jmusicbot.Bot
+import com.jagrosh.jmusicbot.audio.AudioHandler
+import com.jagrosh.jmusicbot.settings.Settings
+import net.dv8tion.jda.api.entities.channel.ChannelType
+import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion
+import net.dv8tion.jda.api.exceptions.PermissionException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
- * @author John Grosh <john.a.grosh@gmail.com>
+ * @author John Grosh <john.a.grosh></john.a.grosh>@gmail.com>
  */
-public abstract class MusicCommand extends SlashCommand {
-    protected final Bot bot;
-    protected boolean bePlaying;
-    protected boolean beListening;
-    Logger log = LoggerFactory.getLogger("MusicCommand");
+abstract class MusicCommand(@JvmField protected val bot: Bot) : SlashCommand() {
+    @JvmField
+    protected var bePlaying: Boolean = false
+    @JvmField
+    protected var beListening: Boolean = false
+    open var log: Logger = LoggerFactory.getLogger("MusicCommand")
 
-    public MusicCommand(Bot bot) {
-        this.bot = bot;
-        this.guildOnly = true;
-        this.category = new Category("Music");
+    init {
+        this.guildOnly = true
+        this.category = Category("Music")
     }
 
-    @Override
-    protected void execute(SlashCommandEvent event) {
+    override fun execute(event: SlashCommandEvent) {
+        val settings = event.client.getSettingsFor<Settings>(event.guild)
+        val channel = settings.getTextChannel(event.guild)
 
-        Settings settings = event.getClient().getSettingsFor(event.getGuild());
-        TextChannel channel = settings.getTextChannel(event.getGuild());
-        if (bot.getConfig().getCosgyDevHost()) {
-            try {
-
-                MaintenanceInfo.CommandInfo(event, event.getClient());
-            } catch (IOException | ParseException e) {
-                e.printStackTrace();
-            }
-        }
-        bot.getPlayerManager().setUpHandler(event.getGuild());
-        if (bePlaying && !((AudioHandler) event.getGuild().getAudioManager().getSendingHandler()).isMusicPlaying(event.getJDA())) {
-            event.reply(event.getClient().getError() + "コマンドを使用するには、再生中である必要があります。").queue();
-            return;
+        bot.playerManager.setUpHandler(event.guild)
+        if (bePlaying && !(event.guild!!.audioManager.sendingHandler as AudioHandler?)!!.isMusicPlaying(event.jda)) {
+            event.reply(event.client.error + "コマンドを使用するには、再生中である必要があります。").queue()
+            return
         }
         if (beListening) {
-            AudioChannelUnion current = event.getGuild().getSelfMember().getVoiceState().getChannel();
+            var current = event.guild!!.selfMember.voiceState!!.channel
 
-            if (current == null)
-                current = (AudioChannelUnion) settings.getVoiceChannel(event.getGuild());
-            GuildVoiceState userState = event.getMember().getVoiceState();
+            if (current == null) current = settings.getVoiceChannel(event.guild) as AudioChannelUnion
+            val userState = event.member!!.voiceState
 
-            if (!userState.inAudioChannel() || userState.isDeafened() || (current != null && !userState.getChannel().equals(current))) {
-                event.reply(event.getClient().getError() + String.format("このコマンドを使用するには、%sに参加している必要があります！", (current == null ? "音声チャンネル" : "**" + current.getAsMention() + "**"))).queue();
-                return;
+            if (!userState!!.inAudioChannel() || userState.isDeafened || (current != null && userState.channel != current)) {
+                event.reply(
+                    event.client.error + String.format(
+                        "このコマンドを使用するには、%sに参加している必要があります！",
+                        (if (current == null) "音声チャンネル" else "**" + current.asMention + "**")
+                    )
+                ).queue()
+                return
             }
-            if (!event.getGuild().getSelfMember().getVoiceState().inAudioChannel()) {
+            if (!event.guild!!.selfMember.voiceState!!.inAudioChannel()) {
                 try {
-                    event.getGuild().getAudioManager().openAudioConnection(userState.getChannel());
-                } catch (PermissionException ex) {
-                    event.reply(event.getClient().getError() + String.format("**%s**に接続できません!", userState.getChannel().getAsMention())).queue();
-                    return;
+                    event.guild!!.audioManager.openAudioConnection(userState.channel)
+                } catch (ex: PermissionException) {
+                    event.reply(
+                        event.client.error + String.format(
+                            "**%s**に接続できません!", userState.channel!!
+                                .asMention
+                        )
+                    ).queue()
+                    return
                 }
-                if (userState.getChannel().getType() == ChannelType.STAGE) {
-                    event.getTextChannel().sendMessage(event.getClient().getWarning() + String.format("ステージチャンネルに参加しました。ステージチャンネルで%sを使用するには手動でスピーカーに招待する必要があります。", event.getGuild().getSelfMember().getNickname())).queue();
+                if (userState.channel!!.type == ChannelType.STAGE) {
+                    event.textChannel.sendMessage(
+                        event.client.warning + String.format(
+                            "ステージチャンネルに参加しました。ステージチャンネルで%sを使用するには手動でスピーカーに招待する必要があります。",
+                            event.guild!!
+                                .selfMember.nickname
+                        )
+                    ).queue()
                 }
             }
         }
 
-        doCommand(event);
+        doCommand(event)
     }
 
-    @Override
-    protected void execute(CommandEvent event) {
-        Settings settings = event.getClient().getSettingsFor(event.getGuild());
-        TextChannel channel = settings.getTextChannel(event.getGuild());
-        if (bot.getConfig().getCosgyDevHost()) {
-            try {
-                MaintenanceInfo.CommandInfo(event);
-            } catch (IOException | ParseException e) {
-                e.printStackTrace();
-            }
-        }
-        if (channel != null && !event.getTextChannel().equals(channel)) {
-            try {
-                event.getMessage().delete().queue();
-            } catch (PermissionException ignore) {
-            }
-            event.replyInDm(event.getClient().getError() + String.format("コマンドは%sでのみ実行できます", channel.getAsMention()));
-            return;
-        }
-        bot.getPlayerManager().setUpHandler(event.getGuild()); // no point constantly checking for this later
+    override fun execute(event: CommandEvent) {
+        val settings = event.client.getSettingsFor<Settings>(event.guild)
+        val channel = settings.getTextChannel(event.guild)
 
-        if (bePlaying && !((AudioHandler) event.getGuild().getAudioManager().getSendingHandler()).isMusicPlaying(event.getJDA())) {
-            event.reply(event.getClient().getError() + "コマンドを使用するには、再生中である必要があります。");
-            return;
+        if (channel != null && event.textChannel != channel) {
+            try {
+                event.message.delete().queue()
+            } catch (ignore: PermissionException) {
+            }
+            event.replyInDm(event.client.error + String.format("コマンドは%sでのみ実行できます", channel.asMention))
+            return
+        }
+        bot.playerManager.setUpHandler(event.guild) // no point constantly checking for this later
+
+        if (bePlaying && !(event.guild.audioManager.sendingHandler as AudioHandler?)!!.isMusicPlaying(event.jda)) {
+            event.reply(event.client.error + "コマンドを使用するには、再生中である必要があります。")
+            return
         }
         if (beListening) {
-            AudioChannelUnion current = event.getGuild().getSelfMember().getVoiceState().getChannel();
+            var current = event.guild.selfMember.voiceState!!.channel
 
-            if (current == null)
-                current = (AudioChannelUnion) settings.getVoiceChannel(event.getGuild());
-            GuildVoiceState userState = event.getMember().getVoiceState();
-            if (!userState.inAudioChannel() || userState.isDeafened() || (current != null && !userState.getChannel().equals(current))) {
-                event.replyError(String.format("このコマンドを使用するには、%sに参加している必要があります！", (current == null ? "音声チャンネル" : "**" + current.getName() + "**")));
-                return;
+            if (current == null) current = settings.getVoiceChannel(event.guild) as AudioChannelUnion
+            val userState = event.member.voiceState
+            if (!userState!!.inAudioChannel() || userState.isDeafened || (current != null && userState.channel != current)) {
+                event.replyError(
+                    String.format(
+                        "このコマンドを使用するには、%sに参加している必要があります！",
+                        (if (current == null) "音声チャンネル" else "**" + current.name + "**")
+                    )
+                )
+                return
             }
-            if (!event.getGuild().getSelfMember().getVoiceState().inAudioChannel()) {
+            if (!event.guild.selfMember.voiceState!!.inAudioChannel()) {
                 try {
-                    event.getGuild().getAudioManager().openAudioConnection(userState.getChannel());
-                } catch (PermissionException ex) {
-                    event.reply(event.getClient().getError() + String.format("**%s**に接続できません!", userState.getChannel().getName()));
-                    return;
+                    event.guild.audioManager.openAudioConnection(userState.channel)
+                } catch (ex: PermissionException) {
+                    event.reply(
+                        event.client.error + String.format(
+                            "**%s**に接続できません!", userState.channel!!
+                                .name
+                        )
+                    )
+                    return
                 }
-                if (userState.getChannel().getType() == ChannelType.STAGE) {
-                    event.getTextChannel().sendMessage(event.getClient().getWarning() + String.format("ステージチャンネルに参加しました。ステージチャンネルで%sを使用するには手動でスピーカーに招待する必要があります。", event.getGuild().getSelfMember().getNickname())).queue();
+                if (userState.channel!!.type == ChannelType.STAGE) {
+                    event.textChannel.sendMessage(
+                        event.client.warning + String.format(
+                            "ステージチャンネルに参加しました。ステージチャンネルで%sを使用するには手動でスピーカーに招待する必要があります。",
+                            event.guild.selfMember.nickname
+                        )
+                    ).queue()
                 }
             }
         }
 
-        doCommand(event);
+        doCommand(event)
     }
 
-    public abstract void doCommand(CommandEvent event);
+    abstract fun doCommand(event: CommandEvent?)
 
-    public abstract void doCommand(SlashCommandEvent event);
+    abstract fun doCommand(event: SlashCommandEvent?)
 }

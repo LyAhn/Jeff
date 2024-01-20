@@ -1,5 +1,5 @@
 /*
- *  Copyright 2021 Cosgy Dev (info@cosgy.dev).
+ *  Copyright 2024 Cosgy Dev (info@cosgy.dev).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -114,7 +114,7 @@ public class CacheLoader {
     public CacheResult ConvertCache(List<dev.cosgy.jmusicbot.util.Cache> data) {
         List<String> urls = new ArrayList<>();
         for (dev.cosgy.jmusicbot.util.Cache datum : data) {
-            urls.add(datum.getUrl());
+            urls.add(datum.url);
         }
         return new CacheResult(urls, false);
     }

@@ -1,92 +1,87 @@
 /*
- * Copyright 2016 John Grosh <john.a.grosh@gmail.com>.
+ *  Copyright 2024 Cosgy Dev (info@cosgy.dev).
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *        http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *   Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
-package dev.cosgy.jmusicbot.slashcommands.dj;
+package dev.cosgy.jmusicbot.slashcommands.dj
 
-import com.jagrosh.jdautilities.command.CommandEvent;
-import com.jagrosh.jdautilities.command.SlashCommandEvent;
-import com.jagrosh.jmusicbot.Bot;
-import com.jagrosh.jmusicbot.audio.AudioHandler;
-import dev.cosgy.jmusicbot.slashcommands.DJCommand;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.jagrosh.jdautilities.command.CommandEvent
+import com.jagrosh.jdautilities.command.SlashCommandEvent
+import com.jagrosh.jmusicbot.Bot
+import com.jagrosh.jmusicbot.audio.AudioHandler
+import dev.cosgy.jmusicbot.slashcommands.DJCommand
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
- * @author John Grosh <john.a.grosh@gmail.com>
+ * @author John Grosh <john.a.grosh></john.a.grosh>@gmail.com>
  */
-public class SkipToCmd extends DJCommand {
-    Logger log = LoggerFactory.getLogger("Skip");
+class SkipToCmd(bot: Bot) : DJCommand(bot) {
+    override var log: Logger = LoggerFactory.getLogger("Skip")
 
-    public SkipToCmd(Bot bot) {
-        super(bot);
-        this.name = "skipto";
-        this.help = "指定された曲にスキップします";
-        this.arguments = "<position>";
-        this.aliases = bot.getConfig().getAliases(this.name);
-        this.bePlaying = true;
+    init {
+        this.name = "skipto"
+        this.help = "指定された曲にスキップします"
+        this.arguments = "<position>"
+        this.aliases = bot.config.getAliases(this.name)
+        this.bePlaying = true
 
-        List<OptionData> options = new ArrayList<>();
-        options.add(new OptionData(OptionType.INTEGER, "position", "position", true));
-        this.options = options;
-
+        val options: MutableList<OptionData> = ArrayList()
+        options.add(OptionData(OptionType.INTEGER, "position", "position", true))
+        this.options = options
     }
 
-    @Override
-    public void doCommand(CommandEvent event) {
-        int index = 0;
+    override fun doCommand(event: CommandEvent?) {
+        var index = 0
         try {
-            index = Integer.parseInt(event.getArgs());
-        } catch (NumberFormatException e) {
-            event.reply(event.getClient().getError() + " `" + event.getArgs() + "` は有効な整数ではありません。");
-            return;
+            index = event!!.args.toInt()
+        } catch (e: NumberFormatException) {
+            event!!.reply(event.client.error + " `" + event.args + "` は有効な整数ではありません。")
+            return
         }
-        AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
-        if (index < 1 || index > handler.getQueue().size()) {
-            event.reply(event.getClient().getError() + " 1から" + handler.getQueue().size() + "の間の整数でないといけません!");
-            return;
+        val handler = event.guild.audioManager.sendingHandler as AudioHandler?
+        if (index < 1 || index > handler!!.queue.size()) {
+            event.reply(event.client.error + " 1から" + handler!!.queue.size() + "の間の整数でないといけません!")
+            return
         }
-        handler.getQueue().skip(index - 1);
-        event.reply(event.getClient().getSuccess() + " **" + handler.getQueue().get(0).getTrack().getInfo().title + "にスキップしました。**");
-        handler.getPlayer().stopTrack();
+        handler!!.queue.skip(index - 1)
+        event.reply(event.client.success + " **" + handler.queue[0].track.info.title + "にスキップしました。**")
+        handler.player.stopTrack()
     }
 
-    @Override
-    public void doCommand(SlashCommandEvent event) {
-        if (!checkDJPermission(event.getClient(), event)) {
-            event.reply(event.getClient().getWarning() + "権限がないため実行できません。").queue();
-            return;
+    override fun doCommand(event: SlashCommandEvent?) {
+        if (!checkDJPermission(event!!.client, event)) {
+            event.reply(event.client.warning + "権限がないため実行できません。").queue()
+            return
         }
-        int index = 0;
+        var index = 0
         try {
-            index = Integer.parseInt(event.getOption("position").getAsString());
-        } catch (NumberFormatException e) {
-            event.reply(event.getClient().getError() + " `" + event.getOption("position").getAsString() + "` は有効な整数ではありません。").queue();
-            return;
+            index = event.getOption("position")!!.asString.toInt()
+        } catch (e: NumberFormatException) {
+            event.reply(event.client.error + " `" + event.getOption("position")!!.asString + "` は有効な整数ではありません。")
+                .queue()
+            return
         }
-        AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
-        if (index < 1 || index > handler.getQueue().size()) {
-            event.reply(event.getClient().getError() + " 1から" + handler.getQueue().size() + "の間の整数でないといけません!").queue();
-            return;
+        val handler = event.guild!!.audioManager.sendingHandler as AudioHandler?
+        if (index < 1 || index > handler!!.queue.size()) {
+            event.reply(event.client.error + " 1から" + handler!!.queue.size() + "の間の整数でないといけません!")
+                .queue()
+            return
         }
-        handler.getQueue().skip(index - 1);
-        event.reply(event.getClient().getSuccess() + " **" + handler.getQueue().get(0).getTrack().getInfo().title + "にスキップしました。**").queue();
-        handler.getPlayer().stopTrack();
+        handler!!.queue.skip(index - 1)
+        event.reply(event.client.success + " **" + handler.queue[0].track.info.title + "にスキップしました。**").queue()
+        handler.player.stopTrack()
     }
 }

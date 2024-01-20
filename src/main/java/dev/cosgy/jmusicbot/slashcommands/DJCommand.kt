@@ -1,68 +1,71 @@
 /*
- * Copyright 2018 John Grosh (jagrosh).
+ *  Copyright 2024 Cosgy Dev (info@cosgy.dev).
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *        http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *   Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
-package dev.cosgy.jmusicbot.slashcommands;
+package dev.cosgy.jmusicbot.slashcommands
 
-import com.jagrosh.jdautilities.command.CommandClient;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import com.jagrosh.jdautilities.command.SlashCommandEvent;
-import com.jagrosh.jmusicbot.Bot;
-import com.jagrosh.jmusicbot.settings.Settings;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Role;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jagrosh.jdautilities.command.CommandClient
+import com.jagrosh.jdautilities.command.CommandEvent
+import com.jagrosh.jdautilities.command.SlashCommandEvent
+import com.jagrosh.jmusicbot.Bot
+import com.jagrosh.jmusicbot.settings.Settings
+import net.dv8tion.jda.api.Permission
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author John Grosh (john.a.grosh@gmail.com)
  */
-public abstract class DJCommand extends MusicCommand {
-    static Logger log = LoggerFactory.getLogger("DJCommand");
-
-    public DJCommand(Bot bot) {
-        super(bot);
-        this.category = new Category("DJ", DJCommand::checkDJPermission);
+abstract class DJCommand(bot: Bot?) : MusicCommand(bot) {
+    init {
+        this.category = Category("DJ") { event: CommandEvent -> checkDJPermission(event) }
     }
 
-    public static boolean checkDJPermission(CommandEvent event) {
-        if (event.getAuthor().getId().equals(event.getClient().getOwnerId())) {
-            return true;
-        }
-        if (event.getGuild() == null) {
-            return true;
-        }
-        if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
-            return true;
-        }
-        Settings settings = event.getClient().getSettingsFor(event.getGuild());
-        Role dj = settings.getRole(event.getGuild());
-        return dj != null && (event.getMember().getRoles().contains(dj) || dj.getIdLong() == event.getGuild().getIdLong());
-    }
+    companion object {
+        var log: Logger = LoggerFactory.getLogger("DJCommand")
 
-    public static boolean checkDJPermission(CommandClient client, SlashCommandEvent event) {
-        if (event.getUser().getId().equals(client.getOwnerId())) {
-            return true;
+        @JvmStatic
+        fun checkDJPermission(event: CommandEvent): Boolean {
+            if (event.author.id == event.client.ownerId) {
+                return true
+            }
+            if (event.guild == null) {
+                return true
+            }
+            if (event.member.hasPermission(Permission.MANAGE_SERVER)) {
+                return true
+            }
+            val settings = event.client.getSettingsFor<Settings>(event.guild)
+            val dj = settings.getRole(event.guild)
+            return dj != null && (event.member.roles.contains(dj) || dj.idLong == event.guild.idLong)
         }
-        if (event.getGuild() == null) {
-            return true;
+
+        @JvmStatic
+        fun checkDJPermission(client: CommandClient, event: SlashCommandEvent): Boolean {
+            if (event.user.id == client.ownerId) {
+                return true
+            }
+            if (event.guild == null) {
+                return true
+            }
+            if (event.member!!.hasPermission(Permission.MANAGE_SERVER)) {
+                return true
+            }
+            val settings = client.getSettingsFor<Settings>(event.guild)
+            val dj = settings.getRole(event.guild)
+            return dj != null && (event.member!!
+                .roles.contains(dj) || dj.idLong == event.guild!!.idLong)
         }
-        if (event.getMember().hasPermission(Permission.MANAGE_SERVER)) {
-            return true;
-        }
-        Settings settings = client.getSettingsFor(event.getGuild());
-        Role dj = settings.getRole(event.getGuild());
-        return dj != null && (event.getMember().getRoles().contains(dj) || dj.getIdLong() == event.getGuild().getIdLong());
     }
 }

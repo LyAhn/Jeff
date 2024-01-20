@@ -1,134 +1,127 @@
 /*
- * Copyright 2019 John Grosh <john.a.grosh@gmail.com>.
+ *  Copyright 2024 Cosgy Dev (info@cosgy.dev).
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *        http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *   Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
-package dev.cosgy.jmusicbot.slashcommands.dj;
+package dev.cosgy.jmusicbot.slashcommands.dj
 
-import com.jagrosh.jdautilities.command.CommandEvent;
-import com.jagrosh.jdautilities.command.SlashCommandEvent;
-import com.jagrosh.jdautilities.commons.utils.FinderUtil;
-import com.jagrosh.jdautilities.menu.OrderedMenu;
-import com.jagrosh.jmusicbot.Bot;
-import com.jagrosh.jmusicbot.audio.AudioHandler;
-import dev.cosgy.jmusicbot.slashcommands.DJCommand;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import com.jagrosh.jdautilities.command.CommandEvent
+import com.jagrosh.jdautilities.command.SlashCommandEvent
+import com.jagrosh.jdautilities.commons.utils.FinderUtil
+import com.jagrosh.jdautilities.menu.Menu
+import com.jagrosh.jmusicbot.Bot
+import com.jagrosh.jmusicbot.audio.AudioHandler
+import dev.cosgy.jmusicbot.slashcommands.DJCommand
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
+import net.dv8tion.jda.api.utils.messages.MessageCreateData
+import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+// TODO: 選択リストはDiscord公式が提供しているものに変更する
 
 /**
  * @author Michaili K.
  */
-public class ForceRemoveCmd extends DJCommand {
-    public ForceRemoveCmd(Bot bot) {
-        super(bot);
-        this.name = "forceremove";
-        this.help = "指定したユーザーのエントリーを再生待ちから削除します";
-        this.arguments = "<ユーザー>";
-        this.aliases = bot.getConfig().getAliases(this.name);
-        this.beListening = false;
-        this.bePlaying = true;
-        this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+class ForceRemoveCmd(bot: Bot) : DJCommand(bot) {
+    init {
+        this.name = "forceremove"
+        this.help = "指定したユーザーのエントリーを再生待ちから削除します"
+        this.arguments = "<ユーザー>"
+        this.aliases = bot.config.getAliases(this.name)
+        this.beListening = false
+        this.bePlaying = true
+        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
 
-        List<OptionData> options = new ArrayList<>();
-        options.add(new OptionData(OptionType.USER, "user", "ユーザー", true));
-        this.options = options;
-
+        val options: MutableList<OptionData> = ArrayList()
+        options.add(OptionData(OptionType.USER, "user", "ユーザー", true))
+        this.options = options
     }
 
-    @Override
-    public void doCommand(CommandEvent event) {
-        if (event.getArgs().isEmpty()) {
-            event.replyError("ユーザーに言及する必要があります！");
-            return;
+    override fun doCommand(event: CommandEvent?) {
+        if (event!!.args.isEmpty()) {
+            event.replyError("ユーザーに言及する必要があります！")
+            return
         }
 
-        AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
-        if (handler.getQueue().isEmpty()) {
-            event.replyError("再生待ちには何もありません！");
-            return;
+        val handler = event.guild.audioManager.sendingHandler as AudioHandler?
+        if (handler!!.queue.isEmpty) {
+            event.replyError("再生待ちには何もありません！")
+            return
         }
 
 
-        User target;
-        List<Member> found = FinderUtil.findMembers(event.getArgs(), event.getGuild());
+        val target: User
+        val found = FinderUtil.findMembers(event.args, event.guild)
 
-        if (found.isEmpty()) {
-            event.replyError("ユーザーが見つかりません！");
-            return;
-        } else if (found.size() > 1) {
-            OrderedMenu.Builder builder = new OrderedMenu.Builder();
-            for (int i = 0; i < found.size() && i < 4; i++) {
-                Member member = found.get(i);
-                builder.addChoice("**" + member.getUser().getName() + "**#" + member.getUser().getDiscriminator());
+
+        if(found.isEmpty()) {
+            event.replyError("ユーザーが見つかりません！")
+            return
+        }
+        if(found.size > 1) {
+            val test = StringSelectMenu.create("user")
+                .setPlaceholder("ユーザーを選択してください")
+
+            for (user in found) {
+                test.addOption("**" + user.user.name + "**", user.user.id)
             }
 
-            builder
-                    .setSelection((msg, i) -> removeAllEntries(found.get(i - 1).getUser(), event))
-                    .setText("複数のユーザーが見つかりました:")
-                    .setColor(event.getSelfMember().getColor())
-                    .useNumbers()
-                    .setUsers(event.getAuthor())
-                    .useCancelButton(true)
-                    .setCancel((msg) -> {
-                    })
-                    .setEventWaiter(bot.getWaiter())
-                    .setTimeout(1, TimeUnit.MINUTES)
+            val message: MessageCreateData = MessageCreateBuilder().setContent("ユーザーを選択してください")
+                .addActionRow(test.build()).build()
 
-                    .build().display(event.getChannel());
-
-            return;
-        } else {
-            target = found.get(0).getUser();
+            event.reply(message)
+            return
         }
-
-        removeAllEntries(target, event);
-
+        target = found[0].user
+        removeAllEntries(target, event)
     }
 
-    @Override
-    public void doCommand(SlashCommandEvent event) {
-        if (!checkDJPermission(event.getClient(), event)) {
-            event.reply(event.getClient().getWarning() + "権限がないため実行できません。").queue();
-            return;
+    override fun doCommand(event: SlashCommandEvent?) {
+        if (!checkDJPermission(event!!.client, event)) {
+            event.reply(event.client.warning + "権限がないため実行できません。").queue()
+            return
         }
-        AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
-        if (handler.getQueue().isEmpty()) {
-            event.reply(event.getClient().getError() + "再生待ちには何もありません！").queue();
-            return;
+        val handler = event.guild!!.audioManager.sendingHandler as AudioHandler?
+        if (handler!!.queue.isEmpty) {
+            event.reply(event.client.error + "再生待ちには何もありません！").queue()
+            return
         }
 
-        User target = event.getOption("user").getAsUser();
-        int count = ((AudioHandler) event.getGuild().getAudioManager().getSendingHandler()).getQueue().removeAll(target.getIdLong());
+        val target = event.getOption("user")!!.asUser
+        val count =
+            (event.guild!!.audioManager.sendingHandler as AudioHandler?)!!.queue.removeAll(target.idLong)
         if (count == 0) {
-            event.reply(event.getClient().getWarning() + "**" + target.getName() + "** の再生待ちに曲がありません！").queue();
+            event.reply(event.client.warning + "**" + target.name + "** の再生待ちに曲がありません！").queue()
         } else {
-            event.reply(event.getClient().getSuccess() + "**" + target.getName() + "**#" + target.getDiscriminator() + "から`" + count + "`曲削除しました。").queue();
+            event.reply(event.client.success + "**" + target.name + "**がリクエストした`" + count + "`曲を削除しました。")
+                .queue()
         }
     }
 
-    private void removeAllEntries(User target, CommandEvent event) {
-        int count = ((AudioHandler) event.getGuild().getAudioManager().getSendingHandler()).getQueue().removeAll(target.getIdLong());
+    private fun removeAllEntries(target: User, event: CommandEvent?) {
+        val count =
+            (event!!.guild.audioManager.sendingHandler as AudioHandler?)!!.queue.removeAll(target.idLong)
         if (count == 0) {
-            event.replyWarning("**" + target.getName() + "** の再生待ちに曲がありません！");
+            event.replyWarning("**" + target.name + "** の再生待ちに曲がありません！")
         } else {
-            event.replySuccess("**" + target.getName() + "**#" + target.getDiscriminator() + "から`" + count + "`曲削除しました。");
+            event.replySuccess("**" + target.name + "**がリクエストした`" + count + "`曲を削除しました。")
         }
     }
 }

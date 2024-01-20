@@ -1,178 +1,184 @@
-package dev.cosgy.jmusicbot.slashcommands.general;
+/*
+ *  Copyright 2024 Cosgy Dev (info@cosgy.dev).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package dev.cosgy.jmusicbot.slashcommands.general
 
-import com.jagrosh.jdautilities.command.CommandEvent;
-import com.jagrosh.jdautilities.command.SlashCommand;
-import com.jagrosh.jdautilities.command.SlashCommandEvent;
-import com.jagrosh.jdautilities.commons.utils.FinderUtil;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jagrosh.jdautilities.command.CommandEvent
+import com.jagrosh.jdautilities.command.SlashCommand
+import com.jagrosh.jdautilities.command.SlashCommandEvent
+import com.jagrosh.jdautilities.commons.utils.FinderUtil
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.time.format.DateTimeFormatter
 
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+class UserInfo : SlashCommand() {
+    var log: Logger = LoggerFactory.getLogger("UserInfo")
 
-public class UserInfo extends SlashCommand {
-    Logger log = LoggerFactory.getLogger("UserInfo");
+    init {
+        this.name = "userinfo"
+        this.help = "指定したユーザーに関する情報を表示します"
+        this.arguments = "<ユーザー>"
+        this.guildOnly = true
+        this.category = Category("General")
 
-    public UserInfo() {
-        this.name = "userinfo";
-        this.help = "指定したユーザーに関する情報を表示します";
-        this.arguments = "<ユーザー>";
-        this.guildOnly = true;
-        this.category = new Category("General");
-
-        List<OptionData> options = new ArrayList<>();
-        options.add(new OptionData(OptionType.USER, "user", "ユーザー", true));
-        this.options = options;
-
+        val options: MutableList<OptionData> = ArrayList()
+        options.add(OptionData(OptionType.USER, "user", "ユーザー", true))
+        this.options = options
     }
 
-    @Override
-    protected void execute(SlashCommandEvent event) {
-        Member memb = event.getOption("user").getAsMember();
+    override fun execute(event: SlashCommandEvent) {
+        val memb = event.getOption("user")!!.asMember
 
-        EmbedBuilder eb = new EmbedBuilder().setColor(memb.getColor());
-        String NAME = memb.getEffectiveName();
-        String TAG = "#" + memb.getUser().getDiscriminator();
-        String GUILD_JOIN_DATE = memb.getTimeJoined().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        String DISCORD_JOINED_DATE = memb.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        String ID = memb.getUser().getId();
-        String STATUS = memb.getOnlineStatus().getKey().replace("offline", ":x: オフライン").replace("dnd", ":red_circle: 起こさないで").replace("idle", "退席中").replace("online", ":white_check_mark: オンライン");
-        String ROLES;
-        String GAME;
-        String AVATAR = memb.getUser().getAvatarUrl();
+        val eb = EmbedBuilder().setColor(memb!!.color)
+        val name = memb.effectiveName
+        val guildJoinData = memb.timeJoined.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"))
+        val discordJoinedData = memb.user.timeCreated.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"))
+        val id = memb.user.id
+        val status =
+            memb.onlineStatus.key.replace("offline", ":x: オフライン").replace("dnd", ":red_circle: 起こさないで")
+                .replace("idle", "退席中").replace("online", ":white_check_mark: オンライン")
+        var roles: String
+        var avatar = memb.user.avatarUrl
 
-        log.debug("\nユーザー名:" + memb.getEffectiveName() + "\n" +
-                "タグ:" + memb.getUser().getDiscriminator() + "\n" +
-                "ギルド参加日時:"
-                + memb.getUser().getTimeCreated()
+        log.debug(
+            """
+    
+    ユーザー名:${memb.effectiveName}
+    ギルド参加日時:
+    """.trimIndent()
+                    + memb.user.timeCreated
                 .format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")) + "\n" +
-                "ユーザーID:" + memb.getUser().getId() + "\n" +
-                "オンライン状態:" + memb.getOnlineStatus());
+                    "ユーザーID:" + memb.user.id + "\n" +
+                    "オンライン状態:" + memb.onlineStatus
+        )
 
-        try {
-            GAME = memb.getActivities().toString();
-        } catch (Exception e) {
-            GAME = "-/-";
+        val game = try {
+            memb.activities.toString()
+        } catch (e: Exception) {
+            "-/-"
         }
 
-        StringBuilder ROLESBuilder = new StringBuilder();
-        for (Role r : memb.getRoles()) {
-            ROLESBuilder.append(r.getName()).append(", ");
+        val rolesBuilder = StringBuilder()
+        for (r in memb.roles) {
+            rolesBuilder.append(r.name).append(", ")
         }
-        ROLES = ROLESBuilder.toString();
-        if (ROLES.length() > 0)
-            ROLES = ROLES.substring(0, ROLES.length() - 2);
-        else
-            ROLES = "このサーバーには役職が存在しません";
+        roles = rolesBuilder.toString()
+        roles = if (roles.isNotEmpty()) roles.substring(0, roles.length - 2)
+        else "このサーバーには役職が存在しません"
 
-        if (AVATAR == null) {
-            AVATAR = "アイコンなし";
+        if (avatar == null) {
+            avatar = "アイコンなし"
         }
 
-        eb.setAuthor(memb.getUser().getName() + TAG + " のユーザー情報", null, null)
-                .addField(":pencil2: 名前/ニックネーム", "**" + NAME + "**", true)
-                .addField(":link: DiscordTag", "**" + TAG + "**", true)
-                .addField(":1234: ID", "**" + ID + "**", true)
-                .addBlankField(false)
-                .addField(":signal_strength: 現在のステータス", "**" + STATUS + "**", true)
-                .addField(":video_game: プレイ中のゲーム", "**" + GAME + "**", true)
-                .addField(":tools: 役職", "**" + ROLES + "**", true)
-                .addBlankField(false)
-                .addField(":inbox_tray: サーバー参加日", "**" + GUILD_JOIN_DATE + "**", true)
-                .addField(":beginner: アカウント作成日", "**" + DISCORD_JOINED_DATE + "**", true)
-                .addBlankField(false)
-                .addField(":frame_photo: アイコンURL", AVATAR, false);
+        eb.setAuthor(memb.user.name + " のユーザー情報", null, null)
+            .addField(":pencil2: 名前/ニックネーム", "**$name**", true)
+            .addField(":1234: ID", "**$id**", true)
+            .addBlankField(false)
+            .addField(":signal_strength: 現在のステータス", "**$status**", true)
+            .addField(":video_game: プレイ中のゲーム", "**$game**", true)
+            .addField(":tools: 役職", "**$roles**", true)
+            .addBlankField(false)
+            .addField(":inbox_tray: サーバー参加日", "**$guildJoinData**", true)
+            .addField(":beginner: アカウント作成日", "**$discordJoinedData**", true)
+            .addBlankField(false)
+            .addField(":frame_photo: アイコンURL", avatar, false)
 
-        if (!AVATAR.equals("アイコンなし")) {
-            eb.setAuthor(memb.getUser().getName() + TAG + " のユーザー情報", null, AVATAR);
+        if (avatar != "アイコンなし") {
+            eb.setAuthor(memb.user.name + " のユーザー情報", null, avatar)
         }
 
-        event.replyEmbeds(eb.build()).queue();
+        event.replyEmbeds(eb.build()).queue()
     }
 
-    @Override
-    public void execute(CommandEvent event) {
-        Member memb;
-
-        if (event.getArgs().length() > 0) {
+    public override fun execute(event: CommandEvent) {
+        val memb = if (event.args.length > 0) {
             try {
-
-                if (event.getMessage().getReferencedMessage().getMentions().getMembers().size() != 0) {
-                    memb = event.getMessage().getReferencedMessage().getMentions().getMembers().get(0);
+                if (event.message.referencedMessage!!.mentions.members.size != 0) {
+                    event.message.referencedMessage!!.mentions.members[0]
                 } else {
-                    memb = FinderUtil.findMembers(event.getArgs(), event.getGuild()).get(0);
+                    FinderUtil.findMembers(event.args, event.guild)[0]
                 }
-            } catch (Exception e) {
-                event.reply("ユーザー \"" + event.getArgs() + "\" は見つかりませんでした。");
-                return;
+            } catch (e: Exception) {
+                event.reply("ユーザー \"" + event.args + "\" は見つかりませんでした。")
+                return
             }
         } else {
-            memb = event.getMember();
+            event.member
         }
 
-        EmbedBuilder eb = new EmbedBuilder().setColor(memb.getColor());
-        String NAME = memb.getEffectiveName();
-        String TAG = "#" + memb.getUser().getDiscriminator();
-        String GUILD_JOIN_DATE = memb.getTimeJoined().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        String DISCORD_JOINED_DATE = memb.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        String ID = memb.getUser().getId();
-        String STATUS = memb.getOnlineStatus().getKey().replace("offline", ":x: オフライン").replace("dnd", ":red_circle: 起こさないで").replace("idle", "退席中").replace("online", ":white_check_mark: オンライン");
-        String ROLES;
-        String GAME;
-        String AVATAR = memb.getUser().getAvatarUrl();
+        val eb = EmbedBuilder().setColor(memb.color)
+        val name = memb.effectiveName
+        val guildJoinData = memb.timeJoined.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"))
+        val discordJoinedData = memb.user.timeCreated.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"))
+        val id = memb.user.id
+        val status =
+            memb.onlineStatus.key.replace("offline", ":x: オフライン").replace("dnd", ":red_circle: 起こさないで")
+                .replace("idle", "退席中").replace("online", ":white_check_mark: オンライン")
+        var roles: String
+        var avatar = memb.user.avatarUrl
 
-        log.debug("\nユーザー名:" + memb.getEffectiveName() + "\n" +
-                "タグ:" + memb.getUser().getDiscriminator() + "\n" +
-                "ギルド参加日時:"
-                + memb.getUser().getTimeCreated()
+        log.debug(
+            """
+    
+    ユーザー名:${memb.effectiveName}
+    ギルド参加日時:
+    """.trimIndent()
+                    + memb.user.timeCreated
                 .format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")) + "\n" +
-                "ユーザーID:" + memb.getUser().getId() + "\n" +
-                "オンライン状態:" + memb.getOnlineStatus());
+                    "ユーザーID:" + memb.user.id + "\n" +
+                    "オンライン状態:" + memb.onlineStatus
+        )
 
-        try {
-            GAME = memb.getActivities().toString();
-        } catch (Exception e) {
-            GAME = "-/-";
+        val game = try {
+            memb.activities.toString()
+        } catch (e: Exception) {
+            "-/-"
         }
 
-        StringBuilder ROLESBuilder = new StringBuilder();
-        for (Role r : memb.getRoles()) {
-            ROLESBuilder.append(r.getName()).append(", ");
+        val ROLESBuilder = StringBuilder()
+        for (r in memb.roles) {
+            ROLESBuilder.append(r.name).append(", ")
         }
-        ROLES = ROLESBuilder.toString();
-        if (ROLES.length() > 0)
-            ROLES = ROLES.substring(0, ROLES.length() - 2);
-        else
-            ROLES = "このサーバーには役職が存在しません";
+        roles = ROLESBuilder.toString()
+        roles = if (roles.isNotEmpty()) roles.substring(0, roles.length - 2)
+        else "このサーバーには役職が存在しません"
 
-        if (AVATAR == null) {
-            AVATAR = "アイコンなし";
+        if (avatar == null) {
+            avatar = "アイコンなし"
         }
 
-        eb.setAuthor(memb.getUser().getName() + TAG + " のユーザー情報", null, null)
-                .addField(":pencil2: 名前/ニックネーム", "**" + NAME + "**", true)
-                .addField(":link: DiscordTag", "**" + TAG + "**", true)
-                .addField(":1234: ID", "**" + ID + "**", true)
-                .addBlankField(false)
-                .addField(":signal_strength: 現在のステータス", "**" + STATUS + "**", true)
-                .addField(":video_game: プレイ中のゲーム", "**" + GAME + "**", true)
-                .addField(":tools: 役職", "**" + ROLES + "**", true)
-                .addBlankField(false)
-                .addField(":inbox_tray: サーバー参加日", "**" + GUILD_JOIN_DATE + "**", true)
-                .addField(":beginner: アカウント作成日", "**" + DISCORD_JOINED_DATE + "**", true)
-                .addBlankField(false)
-                .addField(":frame_photo: アイコンURL", AVATAR, false);
+        eb.setAuthor(memb.user.name + " のユーザー情報", null, null)
+            .addField(":pencil2: 名前/ニックネーム", "**$name**", true)
+            .addField(":1234: ID", "**$id**", true)
+            .addBlankField(false)
+            .addField(":signal_strength: 現在のステータス", "**$status**", true)
+            .addField(":video_game: プレイ中のゲーム", "**$game**", true)
+            .addField(":tools: 役職", "**$roles**", true)
+            .addBlankField(false)
+            .addField(":inbox_tray: サーバー参加日", "**$guildJoinData**", true)
+            .addField(":beginner: アカウント作成日", "**$discordJoinedData**", true)
+            .addBlankField(false)
+            .addField(":frame_photo: アイコンURL", avatar, false)
 
-        if (!AVATAR.equals("アイコンなし")) {
-            eb.setAuthor(memb.getUser().getName() + TAG + " のユーザー情報", null, AVATAR);
+        if (avatar != "アイコンなし") {
+            eb.setAuthor(memb.user.name +  " のユーザー情報", null, avatar)
         }
 
-        event.getChannel().sendMessageEmbeds(eb.build()).queue();
+        event.channel.sendMessageEmbeds(eb.build()).queue()
     }
 }

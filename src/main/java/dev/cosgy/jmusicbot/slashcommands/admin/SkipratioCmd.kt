@@ -1,5 +1,5 @@
 /*
- *  Copyright 2021 Cosgy Dev (info@cosgy.dev).
+ *  Copyright 2024 Cosgy Dev (info@cosgy.dev).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,64 +13,61 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package dev.cosgy.jmusicbot.slashcommands.admin
 
-package dev.cosgy.jmusicbot.slashcommands.admin;
+import com.jagrosh.jdautilities.command.CommandEvent
+import com.jagrosh.jdautilities.command.SlashCommandEvent
+import com.jagrosh.jmusicbot.Bot
+import com.jagrosh.jmusicbot.settings.Settings
+import dev.cosgy.jmusicbot.slashcommands.AdminCommand
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 
-import com.jagrosh.jdautilities.command.CommandEvent;
-import com.jagrosh.jdautilities.command.SlashCommandEvent;
-import com.jagrosh.jmusicbot.Bot;
-import com.jagrosh.jmusicbot.settings.Settings;
-import dev.cosgy.jmusicbot.slashcommands.AdminCommand;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+class SkipratioCmd(bot: Bot) : AdminCommand() {
+    init {
+        this.name = "setskip"
+        this.help = "サーバー固有のスキップ率を設定"
+        this.arguments = "<0 - 100>"
+        this.aliases = bot.config.getAliases(this.name)
 
-import java.util.ArrayList;
-import java.util.List;
+        val options: MutableList<OptionData> = ArrayList()
+        options.add(OptionData(OptionType.INTEGER, "percent", "スキップ率", true))
 
-public class SkipratioCmd extends AdminCommand {
-    public SkipratioCmd(Bot bot) {
-        this.name = "setskip";
-        this.help = "サーバー固有のスキップ率を設定";
-        this.arguments = "<0 - 100>";
-        this.aliases = bot.getConfig().getAliases(this.name);
-
-        List<OptionData> options = new ArrayList<>();
-        options.add(new OptionData(OptionType.INTEGER, "percent", "スキップ率", true));
-
-        this.options = options;
+        this.options = options
     }
 
-    @Override
-    protected void execute(SlashCommandEvent event) {
+    override fun execute(event: SlashCommandEvent) {
         try {
-            int val = Integer.parseInt(event.getOption("percent").getAsString());
-            if (val < 0 || val > 100) {
-                event.reply(event.getClient().getError() + "値は、0から100の間でなければなりません。").queue();
-                return;
+            val `val` = event.getOption("percent")!!.asString.toInt()
+            if (`val` < 0 || `val` > 100) {
+                event.reply(event.client.error + "値は、0から100の間でなければなりません。").queue()
+                return
             }
-            Settings s = event.getClient().getSettingsFor(event.getGuild());
-            s.setSkipRatio(val / 100.0);
+            val s = event.client.getSettingsFor<Settings>(event.guild)
+            s.skipRatio = `val` / 100.0
 
-            event.reply(event.getClient().getSuccess() + "*" + event.getGuild().getName() + "*のリスナーのスキップ率を" + val + "%に設定しました。").queue();
-        } catch (NumberFormatException ex) {
-            event.reply(event.getClient().getError() + "0～100の整数を入れてください（デフォルトは55）。この数値は、曲をスキップするために投票しなければならないリスニングユーザーの割合です。").queue();
+            event.reply(event.client.success + "*" + event.guild!!.name + "*のリスナーのスキップ率を" + `val` + "%に設定しました。")
+                .queue()
+        } catch (ex: NumberFormatException) {
+            event.reply(event.client.error + "0～100の整数を入れてください（デフォルトは55）。この数値は、曲をスキップするために投票しなければならないリスニングユーザーの割合です。")
+                .queue()
         }
     }
 
-    @Override
-    protected void execute(CommandEvent event) {
+    override fun execute(event: CommandEvent) {
         try {
-            int val = Integer.parseInt(event.getArgs().endsWith("%") ? event.getArgs().substring(0, event.getArgs().length() - 1) : event.getArgs());
-            if (val < 0 || val > 100) {
-                event.replyError("値は、0から100の間でなければなりません。");
-                return;
+            val `val` =
+                (if (event.args.endsWith("%")) event.args.substring(0, event.args.length - 1) else event.args).toInt()
+            if (`val` < 0 || `val` > 100) {
+                event.replyError("値は、0から100の間でなければなりません。")
+                return
             }
-            Settings s = event.getClient().getSettingsFor(event.getGuild());
-            s.setSkipRatio(val / 100.0);
+            val s = event.client.getSettingsFor<Settings>(event.guild)
+            s.skipRatio = `val` / 100.0
 
-            event.replySuccess("*" + event.getGuild().getName() + "*のリスナーのスキップ率を" + val + "%に設定しました。");
-        } catch (NumberFormatException ex) {
-            event.replyError("0～100の整数を入れてください（デフォルトは55）。この数値は、曲をスキップするために投票しなければならないリスニングユーザーの割合です。");
+            event.replySuccess("*" + event.guild.name + "*のリスナーのスキップ率を" + `val` + "%に設定しました。")
+        } catch (ex: NumberFormatException) {
+            event.replyError("0～100の整数を入れてください（デフォルトは55）。この数値は、曲をスキップするために投票しなければならないリスニングユーザーの割合です。")
         }
     }
 }
