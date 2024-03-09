@@ -62,7 +62,7 @@ class PlaynextCmd(bot: Bot) : DJCommand(bot) {
         else if (event.args.isEmpty()) event.message.attachments[0].url else event.args
         log.info(event.guild.name + "で[" + args + "]の読み込みを開始しました。")
         event.reply("$loadingEmoji`[$args]`を読み込み中です...") { m: Message? ->
-            bot.playerManager.loadItemOrdered(
+            bot!!.playerManager.loadItemOrdered(
                 event.guild, args, m?.let { ResultHandler(it, event, false) }
             )
         }
@@ -76,7 +76,7 @@ class PlaynextCmd(bot: Bot) : DJCommand(bot) {
         val args = event.getOption("title")!!.asString
         log.info(event.guild!!.name + "で[" + args + "]の読み込みを開始しました。")
         event.reply("$loadingEmoji`[$args]`を読み込み中です...").queue { m: InteractionHook? ->
-            bot.playerManager.loadItemOrdered(
+            bot!!.playerManager.loadItemOrdered(
                 event.guild, args, m?.let { SlashResultHandler(it, event, false) }
             )
         }
@@ -88,7 +88,7 @@ class PlaynextCmd(bot: Bot) : DJCommand(bot) {
         private val ytsearch: Boolean
     ) : AudioLoadResultHandler {
         private fun loadSingle(track: AudioTrack) {
-            if (bot.config.isTooLong(track)) {
+            if (bot!!.config.isTooLong(track)) {
                 m.editOriginal(
                     FormatUtil.filter(
                         event.client.warning + "(**" + (if (track.info.uri.contains("https://stream.gensokyoradio.net/")) "幻想郷ラジオ" else track.info.title) + "**) このトラックは許可されている最大長よりも長いです: `"
@@ -124,7 +124,7 @@ class PlaynextCmd(bot: Bot) : DJCommand(bot) {
         override fun noMatches() {
             if (ytsearch) m.editOriginal(FormatUtil.filter(event.client.warning + " この検索結果はありません `" + event.user + "`."))
                 .queue()
-            else bot.playerManager.loadItemOrdered(
+            else bot!!.playerManager.loadItemOrdered(
                 event.guild,
                 "ytsearch:" + event.user,
                 SlashResultHandler(m, event, true)
@@ -146,7 +146,7 @@ class PlaynextCmd(bot: Bot) : DJCommand(bot) {
         private val ytsearch: Boolean
     ) : AudioLoadResultHandler {
         private fun loadSingle(track: AudioTrack) {
-            if (bot.config.isTooLong(track)) {
+            if (bot!!.config.isTooLong(track)) {
                 m.editMessage(
                     FormatUtil.filter(
                         event.client.warning + "(**" + (if (track.info.uri.contains("https://stream.gensokyoradio.net/")) "幻想郷ラジオ" else track.info.title) + "**) このトラックは許可されている最大長よりも長いです: `"
@@ -182,7 +182,7 @@ class PlaynextCmd(bot: Bot) : DJCommand(bot) {
         override fun noMatches() {
             if (ytsearch) m.editMessage(FormatUtil.filter(event.client.warning + " この検索結果はありません `" + event.args + "`."))
                 .queue()
-            else bot.playerManager.loadItemOrdered(event.guild, "ytsearch:" + event.args, ResultHandler(m, event, true))
+            else bot!!.playerManager.loadItemOrdered(event.guild, "ytsearch:" + event.args, ResultHandler(m, event, true))
         }
 
         override fun loadFailed(throwable: FriendlyException) {

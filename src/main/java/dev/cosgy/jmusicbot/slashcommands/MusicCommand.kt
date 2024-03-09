@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory
 /**
  * @author John Grosh <john.a.grosh></john.a.grosh>@gmail.com>
  */
-abstract class MusicCommand(@JvmField protected val bot: Bot) : SlashCommand() {
+abstract class MusicCommand(@JvmField protected val bot: Bot?) : SlashCommand() {
     @JvmField
     protected var bePlaying: Boolean = false
     @JvmField
@@ -46,7 +46,7 @@ abstract class MusicCommand(@JvmField protected val bot: Bot) : SlashCommand() {
         val settings = event.client.getSettingsFor<Settings>(event.guild)
         val channel = settings.getTextChannel(event.guild)
 
-        bot.playerManager.setUpHandler(event.guild)
+        bot?.playerManager?.setUpHandler(event.guild)
         if (bePlaying && !(event.guild!!.audioManager.sendingHandler as AudioHandler?)!!.isMusicPlaying(event.jda)) {
             event.reply(event.client.error + "コマンドを使用するには、再生中である必要があります。").queue()
             return
@@ -105,7 +105,7 @@ abstract class MusicCommand(@JvmField protected val bot: Bot) : SlashCommand() {
             event.replyInDm(event.client.error + String.format("コマンドは%sでのみ実行できます", channel.asMention))
             return
         }
-        bot.playerManager.setUpHandler(event.guild) // no point constantly checking for this later
+        bot?.playerManager?.setUpHandler(event.guild) // no point constantly checking for this later
 
         if (bePlaying && !(event.guild.audioManager.sendingHandler as AudioHandler?)!!.isMusicPlaying(event.jda)) {
             event.reply(event.client.error + "コマンドを使用するには、再生中である必要があります。")
