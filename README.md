@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/release/LyAhn/Jeff.svg)](https://github.com/LyAhn/Jeff/releases/latest)
 [![License](https://img.shields.io/github/license/LyAhn/Jeff.svg)](https://github.com/LyAhn/Jeff/blob/master/LICENSE)
 
-# JJeff
+# Jeff
 
 Jeff uses a simple and easy-to-use UI. Setup and launch are also easy.
 
