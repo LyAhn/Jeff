@@ -74,9 +74,9 @@ public class BotConfig {
     public void load() {
         valid = false;
 
-        // ファイルからの設定の読み込み
+        // Load configuration from file
         try {
-            // 設定のパスを取得（デフォルトはconfig.txt)
+            // Retrieve the path for the configuration (default is config.txt)
             path = OtherUtil.getPath(System.getProperty("config.file", System.getProperty("config", "config.txt")));
             if (path.toFile().exists()) {
                 if (System.getProperty("config.file") == null)
@@ -84,10 +84,10 @@ public class BotConfig {
                 ConfigFactory.invalidateCaches();
             }
 
-            // 設定ファイルにロードされ、デフォルト値が追加される
+            // Configuration is loaded from the file and default values are added
             //Config config = ConfigFactory.parseFile(path.toFile()).withFallback(ConfigFactory.load());
             Config config = ConfigFactory.load();
-            // 設定値
+            // Configuration values
             token = config.getString("token");
             prefix = config.getString("prefix");
             altprefix = config.getString("altprefix");

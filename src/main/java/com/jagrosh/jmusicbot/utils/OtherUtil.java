@@ -42,19 +42,18 @@ import java.nio.file.Paths;
  * @author John Grosh <john.a.grosh@gmail.com>
  */
 public class OtherUtil {
-    public final static String NEW_VERSION_AVAILABLE = "A new version of JMusicBot JP is available!\n"
+    public final static String NEW_VERSION_AVAILABLE = "A new version of Jeff is available!\n"
             + "Current version: %s\n"
             + "Latest version: %s\n\n"
-            + " Please download the latest version from https://github.com/Cosgy-Dev/MusicBot-JP-java/releases/latest.";
+            + " Please download the latest version from https://github.com/LyAhn/Jeff/releases/latest.";
     private final static String WINDOWS_INVALID_PATH = "c:\\windows\\system32\\";
 
     /**
-     * 文字列からパスを取得します
-     * また、system32で起動しようとするWindowsの傾向を修正します
-     * ボットがこのパスにアクセスしようとすると、代わりにjarファイルの場所から開始されます。
+     * Retrieves a path from a string
+     * Also corrects the tendency of windows to try to access system32
+     * If the bot tries to access this path, it will start from the jar file location instead.
      *
-     * @param path 文字列パス
-     * @return the パスオブジェクト
+     * @param path string path
      */
     public static Path getPath(String path) {
         Path result = Paths.get(path);
@@ -70,11 +69,10 @@ public class OtherUtil {
     }
 
     /**
-     * jarからリソースを文字列としてロードします
+     * Load a resource from a jar file as a string
      *
-     * @param clazz クラスベースオブジェクト
-     * @param name  リソースの名前
-     * @return リソースの内容を含む文字列
+     * @param clazz Class-based object
+     * @param name  Resource name
      */
     public static String loadResource(Object clazz, String name) {
         try {
@@ -171,13 +169,13 @@ public class OtherUtil {
         if (JMusicBot.class.getPackage() != null && JMusicBot.class.getPackage().getImplementationVersion() != null)
             return JMusicBot.class.getPackage().getImplementationVersion();
         else
-            return "不明";
+            return "Unknown";
     }
 
     public static String getLatestVersion() {
         try {
             Response response = new OkHttpClient.Builder().build()
-                    .newCall(new Request.Builder().get().url("https://api.github.com/repos/Cosgy-Dev/MusicBot-JP-java/releases/latest").build())
+                    .newCall(new Request.Builder().get().url("https://api.github.com/repos/LyAhn/Jeff/releases/latest").build())
                     .execute();
             ResponseBody body = response.body();
             if (body != null) {

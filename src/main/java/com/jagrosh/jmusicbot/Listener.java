@@ -114,7 +114,7 @@ public class Listener extends ListenerAdapter {
         if (event.getChannelLeft().getMembers().size() == 1 && event.getChannelLeft().getMembers().contains(botMember)) {
             AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
 
-            // config.txtの nouserpause が true の場合
+            // If the configuration file has 'nouserpause' set to true,
             if (bot.getConfig().getNoUserPause()) {
                 //⏸
                 // プレイヤーを一時停止する
