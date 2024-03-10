@@ -42,10 +42,10 @@ import java.nio.file.Paths;
  * @author John Grosh <john.a.grosh@gmail.com>
  */
 public class OtherUtil {
-    public final static String NEW_VERSION_AVAILABLE = "利用可能なJMusicBot JPの新しいバージョンがあります!\n"
-            + "現在のバージョン: %s\n"
-            + "最新のバージョン: %s\n\n"
-            + " https://github.com/Cosgy-Dev/MusicBot-JP-java/releases/latest から最新バージョンをダウンロードして下さい。";
+    public final static String NEW_VERSION_AVAILABLE = "A new version of JMusicBot JP is available!\n"
+            + "Current version: %s\n"
+            + "Latest version: %s\n\n"
+            + " Please download the latest version from https://github.com/Cosgy-Dev/MusicBot-JP-java/releases/latest.";
     private final static String WINDOWS_INVALID_PATH = "c:\\windows\\system32\\";
 
     /**
@@ -197,11 +197,11 @@ public class OtherUtil {
     public static String getUnsupportedBotReason(JDA jda)
     {
         if (jda.getSelfUser().getFlags().contains(User.UserFlag.VERIFIED_BOT))
-            return "ボットは検証済みです。検証済みのボットでJMusicBotを使用することはサポートされていません。";
+            return "The bot is verified. Using JMusicBot with a verified bot is not supported.";
 
         ApplicationInfo info = jda.retrieveApplicationInfo().complete();
         if (info.isBotPublic())
-            return "\"Public Bot \"が有効になっています。JMusicBotを公開ボットとして使用することはサポートされていません。開発者ダッシュボードで無効にしてください。";
+            return "\"Public Bot \" is enabled. Using JMusicBot as a public bot is not supported. Please disable it in the developer dashboard.";
 
         return null;
     }

@@ -67,12 +67,12 @@ public class AloneInVoiceHandler {
                 // キャッシュの保存処理
                 CacheLoader cache = bot.getCacheLoader();
                 cache.Save(guild.getId(), handler.getQueue());
-                log.info("再生待ちを保存してボイスチャンネルから退出します。");
-                LastSendTextChannel.SendMessage(guild, ":notes: 再生待ちを保存してボイスチャンネルから退出しました。");
+                log.info("Saved queue and disconnected from voice channel.");
+                LastSendTextChannel.SendMessage(guild, ":notes: Saved queue and disconnected from voice channel.");
             } else {
                 // キャッシュを保存せずに退出する時の処理
-                log.info("再生待ちを削除してボイスチャンネルから退出します。");
-                LastSendTextChannel.SendMessage(guild, ":notes: 再生待ちを削除してボイスチャンネルから退出しました。");
+                log.info("Clearing the playlist and disconnecting from the voice channel.");
+                LastSendTextChannel.SendMessage(guild, ":notes: Cleared the playlist and disconnected from the voice channel.");
             }
 
             handler.stopAndClear();

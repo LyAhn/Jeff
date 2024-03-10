@@ -141,13 +141,13 @@ public class BotConfig {
             boolean write = false;
 
             // validate bot token
-            if (token == null || token.isEmpty() || token.matches("(BOT_TOKEN_HERE|Botトークンをここに貼り付け)")) {
-                token = prompt.prompt("BOTトークンを入力してください。"
-                        + "\nトークンを取得する方法はこちらから:"
+            if (token == null || token.isEmpty() || token.matches("(BOT_TOKEN_HERE)")) {
+                token = prompt.prompt("Please enter the BOT token."
+                        + "\nInstructions on how to get a token can be found here:"
                         + "\nhttps://github.com/jagrosh/MusicBot/wiki/Getting-a-Bot-Token."
-                        + "\nBOTトークン: ");
+                        + "\nBOT token: ");
                 if (token == null) {
-                    prompt.alert(Prompt.Level.WARNING, CONTEXT, "トークンが入力されていません！終了します。\n\n設定ファイルの場所: " + path.toAbsolutePath());
+                    prompt.alert(Prompt.Level.WARNING, CONTEXT, "Token not entered! Exiting..." + "\n\nSettings file location: " + path.toAbsolutePath());
                     return;
                 } else {
                     write = true;
@@ -157,16 +157,16 @@ public class BotConfig {
             // validate bot owner
             if (owner <= 0) {
                 try {
-                    owner = Long.parseLong(prompt.prompt("所有者のユーザーIDが設定されていない、または有効なIDではありません。"
-                            + "\nBOTの所有者のユーザーIDを入力してください。"
-                            + "\nユーザーIDの入手方法はこちらから:"
+                    owner = Long.parseLong(prompt.prompt("Owner ID is not set, or is not a valid ID."
+                            + "\nEnter the User ID of the bot owner."
+                            + "\nInstructions on how to get a User ID can be found here:"
                             + "\nhttps://github.com/jagrosh/MusicBot/wiki/Finding-Your-User-ID"
-                            + "\n所有者のユーザーID: "));
+                            + "\nUser ID of the owner: "));
                 } catch (NumberFormatException | NullPointerException ex) {
                     owner = 0;
                 }
                 if (owner <= 0) {
-                    prompt.alert(Prompt.Level.ERROR, CONTEXT, "無効なユーザーIDです！終了します。\n\n設定ファイルの場所: " + path.toAbsolutePath());
+                    prompt.alert(Prompt.Level.ERROR, CONTEXT, "Invalid User ID! Exiting...\n\nSettings file location: " + path.toAbsolutePath());
                     System.exit(0);
                 } else {
                     write = true;
@@ -180,8 +180,8 @@ public class BotConfig {
                     mod = ("token = " + token + "\r\nowner = " + owner);
                 } else {
                     mod = original.substring(original.indexOf(START_TOKEN) + START_TOKEN.length(), original.indexOf(END_TOKEN))
-                            .replace("BOT_TOKEN_HERE", token).replace("Botトークンをここに貼り付け", token)
-                            .replace("0 // OWNER ID", Long.toString(owner)).replace("所有者IDをここに貼り付け", Long.toString(owner))
+                            .replace("BOT_TOKEN_HERE", token).replace("Paste your bot token here", token)
+                            .replace("0 // OWNER ID", Long.toString(owner)).replace("Paste your owner ID here", Long.toString(owner))
                             .trim();
                 }
 
@@ -191,7 +191,7 @@ public class BotConfig {
             // if we get through the whole config, it's good to go
             valid = true;
         } catch (ConfigException | IOException ex) {
-            prompt.alert(Prompt.Level.ERROR, CONTEXT, ex + ": " + ex.getMessage() + "\n\n設定ファイルの場所: " + path.toAbsolutePath());
+            prompt.alert(Prompt.Level.ERROR, CONTEXT, ex.getClass().getSimpleName() + ": " + ex.getMessage() + "\n\nSettings file location: " + path.toAbsolutePath());
         }
     }
 

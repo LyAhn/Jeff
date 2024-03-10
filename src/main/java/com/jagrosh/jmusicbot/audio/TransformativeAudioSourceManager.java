@@ -75,11 +75,11 @@ public class TransformativeAudioSourceManager extends YoutubeAudioSourceManager 
             String formattedValue = String.format(format, value);
             return super.loadItem(apm, new AudioReference(formattedValue, null));
         } catch (PatternSyntaxException ex) {
-            log.info(String.format("ソース '%s'の無効なパターン構文 '%s'", regex, name));
+            log.info(String.format("Source '%s' has invalid pattern syntax '%s'", regex, name));
         } catch (IOException ex) {
-            log.warn(String.format("ソース '%s'のURLを解決できませんでした： ", name), ex);
+            log.warn(String.format("Source '%s' could not resolve URL: ", name), ex);
         } catch (Exception ex) {
-            log.warn(String.format("ソース '%s'の例外", name), ex);
+            log.warn(String.format("Source '%s' exception", name), ex);
         }
         return null;
     }

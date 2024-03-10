@@ -29,7 +29,7 @@ public class PlaylistsCmd extends MusicCommand {
     public PlaylistsCmd(Bot bot) {
         super(bot);
         this.name = "playlists";
-        this.help = "利用可能な再生リストを表示します";
+        this.help = "Shows available playlists";
         this.aliases = bot.getConfig().getAliases(this.name);
         this.guildOnly = true;
         this.beListening = false;
@@ -43,22 +43,22 @@ public class PlaylistsCmd extends MusicCommand {
         if (!bot.getPlaylistLoader().folderGuildExists(guildID))
             bot.getPlaylistLoader().createGuildFolder(guildID);
         if (!bot.getPlaylistLoader().folderExists()) {
-            event.reply(event.getClient().getWarning() + " 再生リストフォルダが存在しないため作成できませんでした。");
+            event.reply(event.getClient().getWarning() + " Failed to create playlist folder, it does not exist yet.");
             return;
         }
         if (!bot.getPlaylistLoader().folderGuildExists(guildID)) {
-            event.reply(event.getClient().getWarning() + " このサーバーの再生リストフォルダが存在しないため作成できませんでした。");
+            event.reply(event.getClient().getWarning() + " Failed to create guild playlist folder, it does not exist yet.");
             return;
         }
         List<String> list = bot.getPlaylistLoader().getPlaylistNames(guildID);
         if (list == null)
-            event.reply(event.getClient().getError() + " 利用可能な再生リストを読み込めませんでした。");
+            event.reply(event.getClient().getError() + " Failed to load available playlists.");
         else if (list.isEmpty())
-            event.reply(event.getClient().getWarning() + " 再生リストフォルダにプレイリストがありません。");
+            event.reply(event.getClient().getWarning() + " No playlists in playlist folder.");
         else {
-            StringBuilder builder = new StringBuilder(event.getClient().getSuccess() + " 利用可能な再生リスト:\n");
+            StringBuilder builder = new StringBuilder(event.getClient().getSuccess() + " Available playlists:\n");
             list.forEach(str -> builder.append("`").append(str).append("` "));
-            builder.append("\n`").append(event.getClient().getTextualPrefix()).append("play playlist <name>` と入力することで再生リストを再生できます。");
+            builder.append("\n`").append(event.getClient().getTextualPrefix()).append("play playlist <name>` to play playlist.");
             event.reply(builder.toString());
         }
     }
@@ -71,22 +71,22 @@ public class PlaylistsCmd extends MusicCommand {
         if (!bot.getPlaylistLoader().folderGuildExists(guildID))
             bot.getPlaylistLoader().createGuildFolder(guildID);
         if (!bot.getPlaylistLoader().folderExists()) {
-            event.reply(event.getClient().getWarning() + " 再生リストフォルダが存在しないため作成できませんでした。").queue();
+            event.reply(event.getClient().getWarning() + " Failed to create playlist folder, it does not exist yet.").queue();
             return;
         }
         if (!bot.getPlaylistLoader().folderGuildExists(guildID)) {
-            event.reply(event.getClient().getWarning() + " このサーバーの再生リストフォルダが存在しないため作成できませんでした。").queue();
+            event.reply(event.getClient().getWarning() + " Failed to create guild playlist folder, it does not exist yet.").queue();
             return;
         }
         List<String> list = bot.getPlaylistLoader().getPlaylistNames(guildID);
         if (list == null)
-            event.reply(event.getClient().getError() + " 利用可能な再生リストを読み込めませんでした。").queue();
+            event.reply(event.getClient().getError() + " Failed to load available playlists.").queue();
         else if (list.isEmpty())
-            event.reply(event.getClient().getWarning() + " 再生リストフォルダにプレイリストがありません。").queue();
+            event.reply(event.getClient().getWarning() + " No playlists in playlist folder.").queue();
         else {
-            StringBuilder builder = new StringBuilder(event.getClient().getSuccess() + " 利用可能な再生リスト:\n");
+            StringBuilder builder = new StringBuilder(event.getClient().getSuccess() + " Available playlists:\n");
             list.forEach(str -> builder.append("`").append(str).append("` "));
-            builder.append("\n`").append(event.getClient().getTextualPrefix()).append("play playlist <name>` と入力することで再生リストを再生できます。");
+            builder.append("\n`").append(event.getClient().getTextualPrefix()).append("play playlist <name>` to play playlist.");
             event.reply(builder.toString()).queue();
         }
     }

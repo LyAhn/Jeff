@@ -38,7 +38,7 @@ public class SettingsCmd extends SlashCommand {
 
     public SettingsCmd(Bot bot) {
         this.name = "settings";
-        this.help = "Botの設定を表示します";
+        this.help = "Displays bot settings";
         this.aliases = bot.getConfig().getAliases(this.name);
         this.guildOnly = true;
     }
@@ -54,16 +54,15 @@ public class SettingsCmd extends SlashCommand {
         VoiceChannel vChan = s.getVoiceChannel(event.getGuild());
         Role role = s.getRole(event.getGuild());
         EmbedBuilder ebuilder = new EmbedBuilder()
-                .setDescription("コマンド実行用チャンネル: " + (tChan == null ? "なし" : "**#" + tChan.getName() + "**")
-                        + "\n専用ボイスチャンネル: " + (vChan == null ? "なし" : "**" + vChan.getAsMention() + "**")
-                        + "\nDJ 権限: " + (role == null ? "未設定" : "**" + role.getName() + "**")
-                        + "\nリピート: **" + (s.getRepeatMode() == RepeatMode.ALL ? "有効(全曲リピート)" : (s.getRepeatMode() == RepeatMode.SINGLE ? "有効(1曲リピート)" : "無効")) + "**"
-                        + "\n音量:**" + (s.getVolume()) + "**"
-                        + "\nデフォルトプレイリスト: " + (s.getDefaultPlaylist() == null ? "なし" : "**" + s.getDefaultPlaylist() + "**")
+                .setDescription("Command execution channel: " + (tChan == null ? "None" : "**#" + tChan.getName() + "**")
+                        + "\nExclusive voice channel: " + (vChan == null ? "None" : "**" + vChan.getAsMention() + "**")
+                        + "\nDJ role: " + (role == null ? "Unset" : "**" + role.getName() + "**")
+                        + "\nRepeat: **" + (s.getRepeatMode() == RepeatMode.ALL ? "Enabled (Repeat all songs)" : (s.getRepeatMode() == RepeatMode.SINGLE ? "Enabled (Repeat single song)" : "Disabled")) + "**"
+                        + "\nVolume:**" + (s.getVolume()) + "**"
+                        + "\nDefault playlist: " + (s.getDefaultPlaylist() == null ? "None" : "**" + s.getDefaultPlaylist() + "**")
                 )
                 .setFooter(String.format(
-                                "%s 個のサーバーに参加 | %s 個のボイスチャンネルに接続",
-                                event.getJDA().getGuilds().size(),
+                                "%s servers joined | %s voice channels connected",
                                 event.getJDA().getGuilds().stream().filter(g -> Objects.requireNonNull(g.getSelfMember().getVoiceState()).inAudioChannel()).count()),
                         null);
         event.reply(builder.addEmbeds(ebuilder.build()).build()).queue();
@@ -75,20 +74,20 @@ public class SettingsCmd extends SlashCommand {
         MessageCreateBuilder builder = new MessageCreateBuilder()
                 .addContent(EMOJI + " **")
                 .addContent(FormatUtil.filter(event.getSelfUser().getName()))
-                .addContent("** の設定:");
+                .addContent("**'s Settings:");
         TextChannel tChan = s.getTextChannel(event.getGuild());
         VoiceChannel vChan = s.getVoiceChannel(event.getGuild());
         Role role = s.getRole(event.getGuild());
         EmbedBuilder ebuilder = new EmbedBuilder()
                 .setColor(event.getSelfMember().getColor())
-                .setDescription("コマンド実行用チャンネル: " + (tChan == null ? "なし" : "**#" + tChan.getName() + "**")
-                        + "\n専用ボイスチャンネル: " + (vChan == null ? "なし" : "**" + vChan.getName() + "**")
-                        + "\nDJ 権限: " + (role == null ? "未設定" : "**" + role.getName() + "**")
-                        + "\nリピート: **" + (s.getRepeatMode() == RepeatMode.ALL ? "有効(全曲リピート)" : (s.getRepeatMode() == RepeatMode.SINGLE ? "有効(1曲リピート)" : "無効")) + "**"
-                        + "\nデフォルトプレイリスト: " + (s.getDefaultPlaylist() == null ? "なし" : "**" + s.getDefaultPlaylist() + "**")
+                .setDescription("Command channel: " + (tChan == null ? "None" : "**#" + tChan.getName() + "**")
+                        + "\nExclusive voice channel: " + (vChan == null ? "None" : "**" + vChan.getName() + "**")
+                        + "\nDJ Role: " + (role == null ? "Unset" : "**" + role.getName() + "**")
+                        + "\nRepeat: **" + (s.getRepeatMode() == RepeatMode.ALL ? "Enabled (Repeat all songs)" : (s.getRepeatMode() == RepeatMode.SINGLE ? "Enabled (Repeat single song)" : "Disabled")) + "**"
+                        + "\nDefault playlist: " + (s.getDefaultPlaylist() == null ? "None" : "**" + s.getDefaultPlaylist() + "**")
                 )
                 .setFooter(String.format(
-                                "%s 個のサーバーに参加 | %s 個のボイスチャンネルに接続",
+                                "%s servers joined | %s voice channels connected",
                                 event.getJDA().getGuilds().size(),
                                 event.getJDA().getGuilds().stream().filter(g -> Objects.requireNonNull(g.getSelfMember().getVoiceState()).inAudioChannel()).count()),
                         null);

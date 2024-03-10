@@ -72,17 +72,16 @@ public class SettingsManager implements GuildSettingsManager {
             // ignore, it just means no settings have been saved yet
             // create an empty json file
             try {
-                LoggerFactory.getLogger("Settings").info("serversettings.json を" + OtherUtil.getPath("serversettings.json").toAbsolutePath() + "に作成しました。");
+                LoggerFactory.getLogger("Settings").info("Created serversettings.json at " + OtherUtil.getPath("serversettings.json").toAbsolutePath());
                 Files.write(OtherUtil.getPath("serversettings.json"), new JSONObject().toString(4).getBytes());
             } catch(IOException ex) {
-                LoggerFactory.getLogger("Settings").warn("サーバー設定ファイルの作成に失敗しました:"+ex);
+                LoggerFactory.getLogger("Settings").warn("Failed to create server settings file: "+ex);
             }
             return;
         } catch(IOException | JSONException e) {
-            LoggerFactory.getLogger("Settings").warn("サーバー設定ファイルの読み込みに失敗しました: "+e);
+            LoggerFactory.getLogger("Settings").warn("Failed to load server settings file: "+e);
         }
     }
-
     /**
      * ギルドのnull以外の設定を取得します
      *
@@ -133,7 +132,7 @@ public class SettingsManager implements GuildSettingsManager {
         try {
             Files.write(OtherUtil.getPath("serversettings.json"), obj.toString(4).getBytes());
         } catch (IOException ex) {
-            LoggerFactory.getLogger("Settings").warn("ファイルへの書き込みに失敗しました： " + ex);
+            LoggerFactory.getLogger("Settings").warn("Failed to write to file: " + ex);
         }
     }
 }

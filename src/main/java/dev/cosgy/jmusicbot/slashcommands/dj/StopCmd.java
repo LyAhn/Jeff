@@ -44,13 +44,12 @@ public class StopCmd extends DJCommand {
     public StopCmd(Bot bot) {
         super(bot);
         this.name = "stop";
-        this.help = "現在の曲を停止して再生待ちを削除します。";
+        this.help = "Stops the current track and clears the playlist.";
         this.aliases = bot.getConfig().getAliases(this.name);
         this.bePlaying = false;
 
         List<OptionData> options = new ArrayList<>();
-        options.add(new OptionData(OptionType.STRING, "option", "再生リストを保存する場合は`save`を入力", false));
-
+        options.add(new OptionData(OptionType.STRING, "option", "If you want to save the playlist, input `save`", false));
         this.options = options;
     }
 
@@ -62,10 +61,10 @@ public class StopCmd extends DJCommand {
 
         if (queue.size() > 0 && event.getArgs().matches("save")) {
             cache.Save(event.getGuild().getId(), handler.getQueue());
-            event.reply(event.getClient().getSuccess() + " 再生待ちの" + queue.size() + "曲を保存して再生を停止しました。");
-            log.info(event.getGuild().getName() + "で再生待ちを保存して,ボイスチャンネルから切断しました。");
+            event.reply(event.getClient().getSuccess() + " Successfully stopped playback and saved " + queue.size() + " tracks in the playlist.");
+            log.info(event.getGuild().getName() + " stopped playback and disconnected from the voice channel by saving the playlist.");
         } else {
-            event.reply(event.getClient().getSuccess() + " 再生待ちを削除して、再生を停止しました。");
+            event.reply(event.getClient().getSuccess() + " Removed the playlist and stopped playback.");
         }
         handler.stopAndClear();
         event.getGuild().getAudioManager().closeAudioConnection();
@@ -74,18 +73,18 @@ public class StopCmd extends DJCommand {
     @Override
     public void doCommand(SlashCommandEvent event) {
         if (!checkDJPermission(event.getClient(), event)) {
-            event.reply(event.getClient().getWarning() + "権限がないため実行できません。").queue();
+            event.reply(event.getClient().getWarning() + "Insufficient permissions, cannot execute.").queue();
             return;
         }
         AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
         CacheLoader cache = bot.getCacheLoader();
         FairQueue<QueuedTrack> queue = handler.getQueue();
 
-        log.debug("再生待ちのサイズ：" + queue.size());
+        log.debug("Queue size: " + queue.size());
 
         if (event.getOption("option") == null) {
-            event.reply(event.getClient().getSuccess() + " 再生待ちを削除して、再生を停止しました。").queue();
-            log.info(event.getGuild().getName() + "で再生待ちを削除して,ボイスチャンネルから切断しました。");
+            event.reply(event.getClient().getSuccess() + " Removed the playlist and stopped playback.").queue();
+            log.info(event.getGuild().getName() + " stopped playback and disconnected from the voice channel by removing the playlist.");
             handler.stopAndClear();
             event.getGuild().getAudioManager().closeAudioConnection();
             return;
@@ -93,11 +92,11 @@ public class StopCmd extends DJCommand {
 
         if (queue.size() > 0 && event.getOption("option").getAsString().equals("save")) {
             cache.Save(event.getGuild().getId(), handler.getQueue());
-            event.reply(event.getClient().getSuccess() + " 再生待ちの" + queue.size() + "曲を保存して再生を停止しました。").queue();
-            log.info(event.getGuild().getName() + "で再生待ちを保存して,ボイスチャンネルから切断しました。");
+            event.reply(event.getClient().getSuccess() + " Saved " + queue.size() + " songs in the playlist and stopped playback.").queue();
+            log.info(event.getGuild().getName() + " stopped playback and disconnected from the voice channel by saving the playlist.");
         } else {
-            event.reply(event.getClient().getSuccess() + " 再生待ちを削除して、再生を停止しました。").queue();
-            log.info(event.getGuild().getName() + "で再生待ちを削除して,ボイスチャンネルから切断しました。");
+            event.reply(event.getClient().getSuccess() + " Removed the playlist and stopped playback.").queue();
+            log.info(event.getGuild().getName() + " stopped playback and disconnected from the voice channel by removing the playlist.");
         }
         handler.stopAndClear();
         event.getGuild().getAudioManager().closeAudioConnection();

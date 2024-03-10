@@ -47,7 +47,7 @@ public class Listener extends ListenerAdapter {
     public void onReady(ReadyEvent event) {
         if (event.getJDA().getGuilds().isEmpty()) {
             Logger log = LoggerFactory.getLogger("MusicBot");
-            log.warn("このボットはグループに入っていません！ボットをあなたのグループに追加するには、以下のリンクを使用してください。");
+            log.warn("This bot is not in any groups! To add the bot to your group, please use the following link:");
             log.warn(event.getJDA().getInviteUrl(JMusicBot.RECOMMENDED_PERMS));
         }
         event.getJDA().getGuilds().forEach((guild) ->
@@ -146,8 +146,8 @@ public class Listener extends ListenerAdapter {
         Member botMember = event.getGuild().getSelfMember();
         AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
 
-        log.debug("再生再開判定 {}", ((event.getChannelJoined().getMembers().size() > 1 && event.getChannelJoined().getMembers().contains(botMember)) && Objects.requireNonNull(handler).getPlayer().isPaused()));
-        //ボイチャにいる人数が1人以上、botがボイチャにいるか、再生が一時停止されているか
+        log.debug("Resume condition {}", ((event.getChannelJoined().getMembers().size() > 1 && event.getChannelJoined().getMembers().contains(botMember)) && Objects.requireNonNull(handler).getPlayer().isPaused()));
+        //More than one person in the voice channel, bot is in the voice channel, and playback is paused
         if ((event.getChannelJoined().getMembers().size() > 1 && event.getChannelJoined().getMembers().contains(botMember)) && Objects.requireNonNull(handler).getPlayer().isPaused()) {
             handler.getPlayer().setPaused(false);
             log.debug("再生を再開しました。");

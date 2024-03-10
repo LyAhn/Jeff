@@ -37,9 +37,9 @@ import java.util.Objects;
  */
 @CommandInfo(
         name = "About",
-        description = "ボットに関する情報を表示します"
+        description = "Displays information about the bot"
 )
-@Author("Cosgy Dev")
+@Author("LyAhn")
 public class AboutCommand extends SlashCommand {
     private final Color color;
     private final String description;
@@ -54,7 +54,7 @@ public class AboutCommand extends SlashCommand {
         this.description = description;
         this.features = features;
         this.name = "about";
-        this.help = "ボットに関する情報を表示します";
+        this.help = "Displays information about the bot";
         this.aliases = new String[]{"botinfo", "info"};
         this.guildOnly = false;
         this.perms = perms;
@@ -77,39 +77,41 @@ public class AboutCommand extends SlashCommand {
                 oauthLink = info.isBotPublic() ? info.getInviteUrl(0L, perms) : "";
             } catch (Exception e) {
                 Logger log = LoggerFactory.getLogger("OAuth2");
-                log.error("招待リンクを生成できませんでした ", e);
+                log.error("Failed to generate invite link ", e);
                 oauthLink = "";
             }
         }
         EmbedBuilder builder = new EmbedBuilder();
         builder.setColor(event.getGuild() == null ? color : event.getGuild().getSelfMember().getColor());
-        builder.setAuthor("" + event.getJDA().getSelfUser().getName() + "についての情報", null, event.getJDA().getSelfUser().getAvatarUrl());
-        String CosgyOwner = "Cosgy Devが運営、開発をしています。";
+        builder.setAuthor("Information about " + event.getJDA().getSelfUser().getName(), null, event.getJDA().getSelfUser().getAvatarUrl());
+        String CosgyOwner = "LyAhn is developing and maintaining this bot.";
         String author = event.getJDA().getUserById(event.getClient().getOwnerId()) == null ? "<@" + event.getClient().getOwnerId() + ">"
                 : Objects.requireNonNull(event.getJDA().getUserById(event.getClient().getOwnerId())).getName();
-        StringBuilder descr = new StringBuilder().append("こんにちは！ **").append(event.getJDA().getSelfUser().getName()).append("**です。 ")
-                .append(description).append("は、").append("[" + JDAUtilitiesInfo.AUTHOR + "](https://github.com/JDA-Applications)の[Commands Extension](" + JDAUtilitiesInfo.GITHUB + ") (")
-                .append(JDAUtilitiesInfo.VERSION).append(")と[JDA library](https://github.com/DV8FromTheWorld/JDA) (")
-                .append(JDAInfo.VERSION).append(")を使用しており、").append((IS_AUTHOR ? CosgyOwner : author + "が所有しています。"))
-                .append(event.getJDA().getSelfUser().getName()).append("についての質問などは[Cosgy Dev公式チャンネル](https://discord.gg/RBpkHxf)へお願いします。")
-                .append("\nこのボットの使用方法は`").append("/help")
-                .append("`で確認することができます。").append("\n\n機能の特徴： ```css");
+        StringBuilder descr = new StringBuilder().append("Hello! I am **").append(event.getJDA().getSelfUser().getName()).append("**. ")
+                .append("I am **").append(event.getJDA().getSelfUser().getName()).append("**. ")
+                .append("[JDA Utilities](https://github.com/JDA-Applications) by ").append("[" + JDAUtilitiesInfo.AUTHOR + "](" + JDAUtilitiesInfo.GITHUB + ") (")
+                .append("[JDA Utilities](https://github.com/JDA-Applications) by ").append("[" + JDAUtilitiesInfo.AUTHOR + "](" + JDAUtilitiesInfo.GITHUB + ") (")
+                .append(JDAUtilitiesInfo.VERSION).append(") and [JDA library](https://github.com/DV8FromTheWorld/JDA) (")
+                .append(JDAInfo.VERSION).append(") and is using it, and ").append((IS_AUTHOR ? "LyAhn is developing and maintaining this bot." : author + " owns it."))
+                .append(event.getJDA().getSelfUser().getName()).append(" questions or inquiries, please visit the [Cosgy Dev official channel](https://discord.gg/RBpkHxf)")
+                .append("\nFor information on how to use this bot, type `").append("/help")
+                .append("`You can check the following").append("\n\nfeatures: ```css");
         for (String feature : features)
             descr.append("\n").append(event.getClient().getSuccess().startsWith("<") ? REPLACEMENT_ICON : event.getClient().getSuccess()).append(" ").append(feature);
         descr.append(" ```");
         builder.setDescription(descr);
 
         if (event.getJDA().getShardInfo().getShardTotal() == 1) {
-            builder.addField("ステータス", event.getJDA().getGuilds().size() + " サーバー\n1 シャード", true);
-            builder.addField("ユーザー", event.getJDA().getUsers().size() + " ユニーク\n" + event.getJDA().getGuilds().stream().mapToInt(g -> g.getMembers().size()).sum() + " 合計", true);
-            builder.addField("チャンネル", event.getJDA().getTextChannels().size() + " テキスト\n" + event.getJDA().getVoiceChannels().size() + " ボイス", true);
+            builder.addField("Status", event.getJDA().getGuilds().size() + " servers\n1 shard", true);
+            builder.addField("Users", event.getJDA().getUsers().size() + " unique\n" + event.getJDA().getGuilds().stream().mapToInt(g -> g.getMembers().size()).sum() + " total", true);
+            builder.addField("Channels", event.getJDA().getTextChannels().size() + " text\n" + event.getJDA().getVoiceChannels().size() + " voice", true);
         } else {
-            builder.addField("ステータス", (event.getClient()).getTotalGuilds() + " サーバー\nシャード " + (event.getJDA().getShardInfo().getShardId() + 1)
+            builder.addField("Status", (event.getClient()).getTotalGuilds() + " servers\nShard " + (event.getJDA().getShardInfo().getShardId() + 1)
                     + "/" + event.getJDA().getShardInfo().getShardTotal(), true);
-            builder.addField("", event.getJDA().getUsers().size() + " ユーザーのシャード\n" + event.getJDA().getGuilds().size() + " サーバー", true);
-            builder.addField("", event.getJDA().getTextChannels().size() + " テキストチャンネル\n" + event.getJDA().getVoiceChannels().size() + " ボイスチャンネル", true);
+            builder.addField("", event.getJDA().getUsers().size() + " unique users\n" + event.getJDA().getGuilds().size() + " servers", true);
+            builder.addField("", event.getJDA().getTextChannels().size() + " text channels\n" + event.getJDA().getVoiceChannels().size() + " voice channels", true);
         }
-        builder.setFooter("再起動が行われた時間", "https://www.cosgy.dev/wp-content/uploads/2020/03/restart.jpg");
+        builder.setFooter("Time of last restart", "https://www.cosgy.dev/wp-content/uploads/2020/03/restart.jpg");
         builder.setTimestamp(event.getClient().getStartTime());
         event.replyEmbeds(builder.build()).queue();
     }
@@ -122,39 +124,40 @@ public class AboutCommand extends SlashCommand {
                 oauthLink = info.isBotPublic() ? info.getInviteUrl(0L, perms) : "";
             } catch (Exception e) {
                 Logger log = LoggerFactory.getLogger("OAuth2");
-                log.error("招待リンクを生成できませんでした ", e);
+                log.error("Failed to generate invite link ", e);
                 oauthLink = "";
             }
         }
         EmbedBuilder builder = new EmbedBuilder();
         builder.setColor(event.isFromType(ChannelType.TEXT) ? event.getGuild().getSelfMember().getColor() : color);
-        builder.setAuthor("" + event.getSelfUser().getName() + "について!", null, event.getSelfUser().getAvatarUrl());
-        String CosgyOwner = "Cosgy Devが運営、開発をしています。";
+        builder.setAuthor("Information about " + event.getSelfUser().getName() + "!", null, event.getSelfUser().getAvatarUrl());
+        String CosgyOwner = "LyAhn is developing and maintaining it.";
         String author = event.getJDA().getUserById(event.getClient().getOwnerId()) == null ? "<@" + event.getClient().getOwnerId() + ">"
                 : Objects.requireNonNull(event.getJDA().getUserById(event.getClient().getOwnerId())).getName();
-        StringBuilder descr = new StringBuilder().append("こんにちは！ **").append(event.getSelfUser().getName()).append("**です。 ")
+        StringBuilder descr = new StringBuilder().append("Hello! I am **").append(event.getSelfUser().getName()).append("**. ")
                 .append(description).append("は、").append(JDAUtilitiesInfo.AUTHOR + "の[コマンド拡張](" + JDAUtilitiesInfo.GITHUB + ") (")
-                .append(JDAUtilitiesInfo.VERSION).append(")と[JDAライブラリ](https://github.com/DV8FromTheWorld/JDA) (")
-                .append(JDAInfo.VERSION).append(")を使用しており、").append((IS_AUTHOR ? CosgyOwner : author + "が所有しています。"))
-                .append(event.getSelfUser().getName()).append("についての質問などは[Cosgy Dev公式チャンネル](https://discord.gg/RBpkHxf)へお願いします。")
-                .append("\nこのボットの使用方法は`").append(event.getClient().getTextualPrefix()).append(event.getClient().getHelpWord())
-                .append("`で確認することができます。").append("\n\n機能の特徴： ```css");
+                .append(JDAUtilitiesInfo.AUTHOR + " of [Command Extensions](" + JDAUtilitiesInfo.GITHUB + ") (")
+                .append(JDAUtilitiesInfo.VERSION).append(") and [JDA library](https://github.com/DV8FromTheWorld/JDA) (")
+                .append(JDAInfo.VERSION).append(") and is owned by ").append((IS_AUTHOR ? CosgyOwner : author + "."))
+                .append(event.getSelfUser().getName()).append("If you have any questions, please contact the [Cosgy Dev official channel](https://discord.gg/RBpkHxf)へお願いします。")
+                .append("\nHow to use this bot`").append(event.getClient().getTextualPrefix()).append(event.getClient().getHelpWord())
+                .append("`You can check with ").append("\n\nFeatures of the function： ```css");
         for (String feature : features)
             descr.append("\n").append(event.getClient().getSuccess().startsWith("<") ? REPLACEMENT_ICON : event.getClient().getSuccess()).append(" ").append(feature);
         descr.append(" ```");
         builder.setDescription(descr);
 
         if (event.getJDA().getShardInfo().getShardTotal() == 1) {
-            builder.addField("ステータス", event.getJDA().getGuilds().size() + " サーバー\n1 シャード", true);
-            builder.addField("ユーザー", event.getJDA().getUsers().size() + " ユニーク\n" + event.getJDA().getGuilds().stream().mapToInt(g -> g.getMembers().size()).sum() + " 合計", true);
-            builder.addField("チャンネル", event.getJDA().getTextChannels().size() + " テキスト\n" + event.getJDA().getVoiceChannels().size() + " ボイス", true);
+            builder.addField("Status", event.getJDA().getGuilds().size() + " servers\n1 shard", true);
+            builder.addField("Users", event.getJDA().getUsers().size() + " unique\n" + event.getJDA().getGuilds().stream().mapToInt(g -> g.getMembers().size()).sum() + " total", true);
+            builder.addField("Channels", event.getJDA().getTextChannels().size() + " text\n" + event.getJDA().getVoiceChannels().size() + " voice", true);
         } else {
-            builder.addField("ステータス", (event.getClient()).getTotalGuilds() + " サーバー\nシャード " + (event.getJDA().getShardInfo().getShardId() + 1)
+            builder.addField("Status", (event.getClient()).getTotalGuilds() + " servers\nShard " + (event.getJDA().getShardInfo().getShardId() + 1)
                     + "/" + event.getJDA().getShardInfo().getShardTotal(), true);
-            builder.addField("", event.getJDA().getUsers().size() + " ユーザーのシャード\n" + event.getJDA().getGuilds().size() + " サーバー", true);
-            builder.addField("", event.getJDA().getTextChannels().size() + " テキストチャンネル\n" + event.getJDA().getVoiceChannels().size() + " ボイスチャンネル", true);
+            builder.addField("", event.getJDA().getUsers().size() + " unique users in shard\n" + event.getJDA().getGuilds().size() + " servers", true);
+            builder.addField("", event.getJDA().getTextChannels().size() + " text channels\n" + event.getJDA().getVoiceChannels().size() + " voice channels", true);
         }
-        builder.setFooter("再起動が行われた時間", "https://www.cosgy.dev/wp-content/uploads/2020/03/restart.jpg");
+        builder.setFooter("The time when the bot was restarted", "https://www.cosgy.dev/wp-content/uploads/2020/03/restart.jpg");
         builder.setTimestamp(event.getClient().getStartTime());
         event.reply(builder.build());
     }

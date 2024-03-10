@@ -70,7 +70,7 @@ public class PlayCmd extends MusicCommand {
         this.loadingEmoji = bot.getConfig().getLoading();
         this.name = "play";
         this.arguments = "<title|URL|subcommand>";
-        this.help = "指定された曲を再生します";
+        this.help = "Plays the specified track";
         this.aliases = bot.getConfig().getAliases(this.name);
         this.beListening = true;
         this.bePlaying = false;
@@ -87,11 +87,11 @@ public class PlayCmd extends MusicCommand {
             if (handler.getPlayer().getPlayingTrack() != null && handler.getPlayer().isPaused()) {
                 if (DJCommand.checkDJPermission(event)) {
                     handler.getPlayer().setPaused(false);
-                    event.replySuccess("**" + handler.getPlayer().getPlayingTrack().getInfo().title + "**の再生を再開しました。");
+                    event.replySuccess("**" + handler.getPlayer().getPlayingTrack().getInfo().title + "** resumed playback.");
 
                     Bot.updatePlayStatus(event.getGuild(), event.getGuild().getSelfMember(), PlayStatus.PLAYING);
                 } else
-                    event.replyError("再生を再開できるのはDJのみです！");
+                    event.replyError("Only the DJ can resume playback!");
                 return;
             }
 
@@ -101,16 +101,16 @@ public class PlayCmd extends MusicCommand {
 
                 AtomicInteger count = new AtomicInteger();
                 CacheLoader.CacheResult cache = bot.getCacheLoader().ConvertCache(data);
-                event.getChannel().sendMessage(":calling: キャッシュファイルを読み込んでいます... (" + cache.getItems().size() + "曲)").queue(m -> {
+                event.getChannel().sendMessage(":calling: Loading cache files... (" + cache.getItems().size() + " tracks)").queue(m -> {
                     cache.loadTracks(bot.getPlayerManager(), (at) -> {
                         handler.addTrack(new QueuedTrack(at, (User) User.fromId(data.get(count.get()).getUserId())));
                         count.getAndIncrement();
                     }, () -> {
                         StringBuilder builder = new StringBuilder(cache.getTracks().isEmpty()
-                                ? event.getClient().getWarning() + " 楽曲がロードされていません。"
-                                : event.getClient().getSuccess() + " キャッシュファイルから、" + "**" + cache.getTracks().size() + "**曲読み込みました。");
+                                ? event.getClient().getWarning() + " No tracks were loaded."
+                                : event.getClient().getSuccess() + " Loaded **" + cache.getTracks().size() + "** tracks from the cache file.");
                         if (!cache.getErrors().isEmpty())
-                            builder.append("\n以下の楽曲をロードできませんでした:");
+                            builder.append("\nThe following tracks could not be loaded:");
                         cache.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1).append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                         String str = builder.toString();
                         if (str.length() > 2000)
@@ -131,18 +131,18 @@ public class PlayCmd extends MusicCommand {
                 handler.stopAndClear();
                 Playlist playlist = bot.getPlaylistLoader().getPlaylist(event.getGuild().getId(), settings.getDefaultPlaylist());
                 if (playlist == null) {
-                    event.replyError("プレイリストフォルダに`" + event.getArgs() + ".txt`が見つかりませんでした。");
+                    event.replyError("Could not find playlist folder with `" + event.getArgs() + ".txt` in it.");
                     return;
                 }
-                event.getChannel().sendMessage(loadingEmoji + " プレイリストを読み込んでいます**" + settings.getDefaultPlaylist() + " ** ...（ " + playlist.getItems().size() + "曲）").queue(m ->
+                event.getChannel().sendMessage(loadingEmoji + " Loading playlist **" + settings.getDefaultPlaylist() + " ** ...(" + playlist.getItems().size() + " tracks)").queue(m ->
                 {
 
                     playlist.loadTracks(bot.getPlayerManager(), (at) -> handler.addTrack(new QueuedTrack(at, event.getAuthor())), () -> {
                         StringBuilder builder = new StringBuilder(playlist.getTracks().isEmpty()
-                                ? event.getClient().getWarning() + " 曲がロードされていません！"
-                                : event.getClient().getSuccess() + " ** " + playlist.getTracks().size() + " **曲をロードしました！");
+                                ? event.getClient().getWarning() + " No tracks were loaded!"
+                                : event.getClient().getSuccess() + " **" + playlist.getTracks().size() + "** tracks were loaded!");
                         if (!playlist.getErrors().isEmpty())
-                            builder.append("\n次の曲を読み込めませんでした。:");
+                            builder.append("\nThe following tracks could not be loaded:");
                         playlist.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1).append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                         String str = builder.toString();
                         if (str.length() > 2000)
@@ -154,9 +154,9 @@ public class PlayCmd extends MusicCommand {
 
             }
 
-            StringBuilder builder = new StringBuilder(event.getClient().getWarning() + " Play コマンド:\n");
-            builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" <曲名>` - YouTubeから最初の結果を再生");
-            builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" <URL>` - 指定された曲、再生リスト、またはストリームを再生します");
+            StringBuilder builder = new StringBuilder(event.getClient().getWarning() + " Play commands:\n");
+            builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" <song>` - Plays the first result from YouTube");
+            builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" <URL>` - Plays the specified track, playlist, or stream");
             for (Command cmd : children)
                 builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" ").append(cmd.getName()).append(" ").append(cmd.getArguments()).append("` - ").append(cmd.getHelp());
             event.reply(builder.toString());
@@ -186,7 +186,7 @@ public class PlayCmd extends MusicCommand {
         private void loadSingle(AudioTrack track, AudioPlaylist playlist) {
             if (bot.getConfig().isTooLong(track)) {
                 m.editMessage(FormatUtil.filter(event.getClient().getWarning() +
-                        " **" + track.getInfo().title + "**`(" + FormatUtil.formatTime(track.getDuration()) + ")` は設定された長さ`(" + FormatUtil.formatTime(bot.getConfig().getMaxSeconds() * 1000) + ")` を超えています。")).queue();
+                " **" + track.getInfo().title + "**`(" + FormatUtil.formatTime(track.getDuration()) + ")` is longer than the specified length`(" + FormatUtil.formatTime(bot.getConfig().getMaxSeconds() * 1000) + ")`.")).queue();
                 return;
             }
             AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
@@ -195,20 +195,20 @@ public class PlayCmd extends MusicCommand {
             // Output MSG ex:
             // <タイトル><(長さ)> を追加しました。
             // <タイトル><(長さ)> を再生待ちの<再生待ち番号>番目に追加しました。
-            String addMsg = FormatUtil.filter(event.getClient().getSuccess() + " **" + (track.getInfo().uri.contains("https://stream.gensokyoradio.net/") ? "幻想郷ラジオ" : track.getInfo().title)
-                    + "** (`" + FormatUtil.formatTime(track.getDuration()) + "`) " + (pos == 0 ? "を追加しました。" : "を再生待ちの" + pos + "番目に追加しました。 "));
+            String addMsg = FormatUtil.filter(event.getClient().getSuccess() + " **" + (track.getInfo().uri.contains("https://stream.gensokyoradio.net/") ? "GensokyoRadio" : track.getInfo().title)
+                    + "** (`" + FormatUtil.formatTime(track.getDuration()) + "`) " + (pos == 0 ? "was added." : "was added at position " + pos + " in the playlist. "));
             if (playlist == null || !event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_ADD_REACTION))
                 m.editMessage(addMsg).queue();
             else {
                 new ButtonMenu.Builder()
-                        .setText(addMsg + "\n" + event.getClient().getWarning() + " この曲の再生リストには他に**" + playlist.getTracks().size() + "**曲が付属しています。トラックを読み込むには " + LOAD + " を選択して下さい。")
+                        .setText(addMsg + "\n" + event.getClient().getWarning() + " This track's playlist contains **" + playlist.getTracks().size() + "** additional tracks. To load these tracks, select " + LOAD + ".")
                         .setChoices(LOAD, CANCEL)
                         .setEventWaiter(bot.getWaiter())
                         .setTimeout(30, TimeUnit.SECONDS)
                         .setAction(re ->
                         {
                             if (re.getName().equals(LOAD))
-                                m.editMessage(addMsg + "\n" + event.getClient().getSuccess() + "**" + loadPlaylist(playlist, track) + "**曲を再生待ちに追加しました!").queue();
+                                m.editMessage(addMsg + "\n" + event.getClient().getSuccess() + "**" + loadPlaylist(playlist, track) + "** tracks were added to the playlist!").queue();
                             else
                                 m.editMessage(addMsg).queue();
                         }).setFinalAction(m ->
@@ -249,14 +249,14 @@ public class PlayCmd extends MusicCommand {
             } else {
                 int count = loadPlaylist(playlist, null);
                 if (count == 0) {
-                    m.editMessage(FormatUtil.filter(event.getClient().getWarning() + " このプレイリスト内" + (playlist.getName() == null ? "" : "(**" + playlist.getName()
-                            + "**) ") + "は、許可された最大長より長いです。(`" + bot.getConfig().getMaxTime() + "`)")).queue();
+                    m.editMessage(FormatUtil.filter(event.getClient().getWarning() + " This playlist" + (playlist.getName() == null ? "" : "(**" + playlist.getName()
+                            + "**) ") + " contains tracks that exceed the maximum allowed length. (`" + bot.getConfig().getMaxTime() + "`)")).queue();
                 } else {
                     m.editMessage(FormatUtil.filter(event.getClient().getSuccess()
-                            + (playlist.getName() == null ? "再生リスト" : "再生リスト **" + playlist.getName() + "**") + " の `"
-                            + playlist.getTracks().size() + "` 曲を再生待ちに追加しました。"
-                            + (count < playlist.getTracks().size() ? "\n" + event.getClient().getWarning() + " 許可されている最大長より長いトラック (`"
-                            + bot.getConfig().getMaxTime() + "`) 省略されています。" : ""))).queue();
+                            + (playlist.getName() == null ? "Playlist" : "Playlist **" + playlist.getName() + "**") + " added `"
+                            + playlist.getTracks().size() + "` tracks to the queue."
+                            + (count < playlist.getTracks().size() ? "\n" + event.getClient().getWarning() + " Tracks exceeding the allowed maximum length (`"
+                            + bot.getConfig().getMaxTime() + "`) were omitted." : ""))).queue();
                 }
             }
         }
@@ -264,7 +264,7 @@ public class PlayCmd extends MusicCommand {
         @Override
         public void noMatches() {
             if (ytsearch)
-                m.editMessage(FormatUtil.filter(event.getClient().getWarning() + " の検索結果はありません `" + event.getArgs() + "`.")).queue();
+                m.editMessage(FormatUtil.filter(event.getClient().getWarning() + " No search results found for `" + event.getArgs() + "`.")).queue();
             else
                 bot.getPlayerManager().loadItemOrdered(event.getGuild(), "ytsearch:" + event.getArgs(), new ResultHandler(m, event, true));
         }
@@ -272,16 +272,16 @@ public class PlayCmd extends MusicCommand {
         @Override
         public void loadFailed(FriendlyException throwable) {
             if (throwable.severity == Severity.COMMON) {
-                m.editMessage(event.getClient().getError() + " 読み込み中にエラーが発生しました: " + throwable.getMessage()).queue();
+                m.editMessage(event.getClient().getError() + " Error occurred while loading: " + throwable.getMessage()).queue();
             } else {
                 if (m.getAuthor().getIdLong() == bot.getConfig().getOwnerId() || m.getMember().isOwner()) {
-                    m.editMessage(event.getClient().getError() + "曲の読み込み中にエラーが発生しました。\n" +
-                            "**エラーの内容: " + throwable.getLocalizedMessage() + "**").queue();
+                    m.editMessage(event.getClient().getError() + " Error occurred while loading track.\n" +
+                            "**Error content: " + throwable.getLocalizedMessage() + "**").queue();
                     StackTraceUtil.sendStackTrace(event.getTextChannel(), throwable);
                     return;
                 }
 
-                m.editMessage(event.getClient().getError() + "曲の読み込み中にエラーが発生しました。").queue();
+                m.editMessage(event.getClient().getError() + " Error occurred while loading track.").queue();
             }
         }
     }
@@ -299,13 +299,13 @@ public class PlayCmd extends MusicCommand {
             this.loadingEmoji = bot.getConfig().getLoading();
             this.name = "request";
             this.arguments = "<title|URL>";
-            this.help = "曲をリクエストします。";
+            this.help = "Request a song.";
             this.aliases = bot.getConfig().getAliases(this.name);
             this.beListening = true;
             this.bePlaying = false;
 
             List<OptionData> options = new ArrayList<>();
-            options.add(new OptionData(OptionType.STRING, "input", "URLまたは曲名", false));
+            options.add(new OptionData(OptionType.STRING, "input", "URL or song name", false));
             this.options = options;
 
         }
@@ -323,11 +323,11 @@ public class PlayCmd extends MusicCommand {
                     if (DJCommand.checkDJPermission(event.getClient(), event)) {
 
                         handler.getPlayer().setPaused(false);
-                        event.reply(event.getClient().getSuccess() + "**" + handler.getPlayer().getPlayingTrack().getInfo().title + "**の再生を再開しました。").queue();
+                        event.reply(event.getClient().getSuccess() + "**" + handler.getPlayer().getPlayingTrack().getInfo().title + "** resumed playing.").queue();
 
                         Bot.updatePlayStatus(event.getGuild(), event.getGuild().getSelfMember(), PlayStatus.PLAYING);
                     } else
-                        event.reply(event.getClient().getError() + "再生を再開できるのはDJのみです！").queue();
+                        event.reply(event.getClient().getError() + "Only DJ can resume playing!").queue();
                     return;
                 }
 
@@ -337,21 +337,21 @@ public class PlayCmd extends MusicCommand {
 
                     AtomicInteger count = new AtomicInteger();
                     CacheLoader.CacheResult cache = bot.getCacheLoader().ConvertCache(data);
-                    event.reply(":calling: キャッシュファイルを読み込んでいます... (" + cache.getItems().size() + "曲)").queue(m -> {
+                    event.reply(":calling: Loading cache... (" + cache.getItems().size() + " songs)").queue(m -> {
                         cache.loadTracks(bot.getPlayerManager(), (at) -> {
-                            // TODO:キャッシュに保存されているユーザーIDを使用する。
+                            //TODO: Use the user ID saved in the cache.
                             handler.addTrack(new QueuedTrack(at, event.getUser()));
                             count.getAndIncrement();
                         }, () -> {
                             StringBuilder builder = new StringBuilder(cache.getTracks().isEmpty()
-                                    ? event.getClient().getWarning() + " 楽曲がロードされていません。"
-                                    : event.getClient().getSuccess() + " キャッシュファイルから、" + "**" + cache.getTracks().size() + "**曲読み込みました。");
+                                    ? event.getClient().getWarning() + " No songs were loaded."
+                                    : event.getClient().getSuccess() + " Successfully loaded " + "**" + cache.getTracks().size() + "** songs from the cache.");
                             if (!cache.getErrors().isEmpty())
-                                builder.append("\n以下の楽曲をロードできませんでした:");
+                                builder.append("\nThe following songs could not be loaded:");
                             cache.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1).append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                             String str = builder.toString();
                             if (str.length() > 2000)
-                                str = str.substring(0, 1994) + " (以下略)";
+                                str = str.substring(0, 1994) + " (rest omitted)";
                             m.editOriginal(FormatUtil.filter(str)).queue();
                         });
                     });
@@ -368,18 +368,18 @@ public class PlayCmd extends MusicCommand {
                     handler.stopAndClear();
                     Playlist playlist = bot.getPlaylistLoader().getPlaylist(event.getGuild().getId(), settings.getDefaultPlaylist());
                     if (playlist == null) {
-                        event.reply("プレイリストフォルダに`" + event.getOption("input").getAsString() + ".txt`が見つかりませんでした。").queue();
+                        event.reply("No playlist file named `" + event.getOption("input").getAsString() + ".txt` was found in the playlist folder.").queue();
                         return;
                     }
-                    event.reply(loadingEmoji + " プレイリストを読み込んでいます**" + settings.getDefaultPlaylist() + " ** ...（ " + playlist.getItems().size() + "曲）").queue(m ->
+                    event.reply(loadingEmoji + "Loading playlist **" + settings.getDefaultPlaylist() + " ** ...（ " + playlist.getItems().size() + " songs）").queue(m ->
                     {
 
                         playlist.loadTracks(bot.getPlayerManager(), (at) -> handler.addTrack(new QueuedTrack(at, event.getUser())), () -> {
                             StringBuilder builder = new StringBuilder(playlist.getTracks().isEmpty()
-                                    ? event.getClient().getWarning() + " 曲がロードされていません！"
-                                    : event.getClient().getSuccess() + " ** " + playlist.getTracks().size() + " **曲をロードしました！");
+                                    ? event.getClient().getWarning() + " No songs were loaded!"
+                                    : event.getClient().getSuccess() + " **" + playlist.getTracks().size() + "** songs were loaded!");
                             if (!playlist.getErrors().isEmpty())
-                                builder.append("\n次の曲を読み込めませんでした。:");
+                                builder.append("\nThe following songs could not be loaded:");
                             playlist.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1).append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                             String str = builder.toString();
                             if (str.length() > 2000)
@@ -391,15 +391,15 @@ public class PlayCmd extends MusicCommand {
 
                 }
 
-                StringBuilder builder = new StringBuilder(event.getClient().getWarning() + " Play コマンド:\n");
-                builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" <曲名>` - YouTubeから最初の結果を再生");
-                builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" <URL>` - 指定された曲、再生リスト、またはストリームを再生します");
+                StringBuilder builder = new StringBuilder(event.getClient().getWarning() + " Play commands:\n");
+                builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" <song name>` - Plays the first result from YouTube");
+                builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" <URL>` - Plays the specified song, playlist, or stream");
                 for (Command cmd : children)
                     builder.append("\n`").append(event.getClient().getPrefix()).append(name).append(" ").append(cmd.getName()).append(" ").append(cmd.getArguments()).append("` - ").append(cmd.getHelp());
                 event.reply(builder.toString()).queue();
                 return;
             }
-            event.reply(loadingEmoji + "`[" + event.getOption("input").getAsString() + "]`を読み込み中です…").queue(m -> bot.getPlayerManager().loadItemOrdered(event.getGuild(), event.getOption("input").getAsString(), new SlashResultHandler(m, event, false)));
+            event.reply(loadingEmoji + "`[" + event.getOption("input").getAsString() + "]` loading...").queue(m -> bot.getPlayerManager().loadItemOrdered(event.getGuild(), event.getOption("input").getAsString(), new SlashResultHandler(m, event, false)));
         }
 
         public class SlashResultHandler implements AudioLoadResultHandler {
@@ -416,7 +416,8 @@ public class PlayCmd extends MusicCommand {
             private void loadSingle(AudioTrack track, AudioPlaylist playlist) {
                 if (bot.getConfig().isTooLong(track)) {
                     m.editOriginal(FormatUtil.filter(event.getClient().getWarning() +
-                            " **" + (track.getInfo().uri.matches(".*stream.gensokyoradio.net/.*") ? "幻想郷ラジオ" : track.getInfo().title) + "**`(" + FormatUtil.formatTime(track.getDuration()) + ")` は設定された長さ`(" + FormatUtil.formatTime(bot.getConfig().getMaxSeconds() * 1000) + ")` を超えています。")).queue();
+                            " **" + (track.getInfo().uri.matches(".*stream.gensokyoradio.net/.*") ? "GensokyoRadio" : track.getInfo().title) + "**`(" + FormatUtil.formatTime(track.getDuration()) + ")` is longer than the maximum permitted duration: `"
+                            + FormatUtil.formatTime(bot.getConfig().getMaxSeconds() * 1000) + "`")).queue();
                     return;
                 }
                 AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
@@ -425,20 +426,20 @@ public class PlayCmd extends MusicCommand {
                 // Output MSG ex:
                 // <タイトル><(長さ)> を追加しました。
                 // <タイトル><(長さ)> を再生待ちの<再生待ち番号>番目に追加しました。
-                String addMsg = FormatUtil.filter(event.getClient().getSuccess() + " **" + (track.getInfo().uri.matches(".*stream.gensokyoradio.net/.*") ? "幻想郷ラジオ" : track.getInfo().title)
-                        + "** (`" + FormatUtil.formatTime(track.getDuration()) + "`) " + (pos == 0 ? "を追加しました。" : "を再生待ちの" + pos + "番目に追加しました。 "));
+                String addMsg = FormatUtil.filter(event.getClient().getSuccess() + " **" + (track.getInfo().uri.matches(".*stream.gensokyoradio.net/.*") ? "GensokyoRadio" : track.getInfo().title)
+                        + "** (`" + FormatUtil.formatTime(track.getDuration()) + "`) " + (pos == 0 ? "has been added." : "has been added as " + pos + " in the queue. "));
                 if (playlist == null || !event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_ADD_REACTION)) {
                     m.editOriginal(addMsg).queue();
                 } else {
                     new ButtonMenu.Builder()
-                            .setText(addMsg + "\n" + event.getClient().getWarning() + " この曲の再生リストには他に**" + playlist.getTracks().size() + "**曲が付属しています。トラックを読み込むには " + LOAD + " を選択して下さい。")
+                            .setText(addMsg + "\n" + event.getClient().getWarning() + " This track's playlist contains **" + playlist.getTracks().size() + "** additional tracks. To load these tracks, select " + LOAD + ".")
                             .setChoices(LOAD, CANCEL)
                             .setEventWaiter(bot.getWaiter())
                             .setTimeout(30, TimeUnit.SECONDS)
                             .setAction(re ->
                             {
                                 if (re.getName().equals(LOAD))
-                                    m.editOriginal(addMsg + "\n" + event.getClient().getSuccess() + "**" + loadPlaylist(playlist, track) + "**曲を再生待ちに追加しました!").queue();
+                                m.editOriginal(addMsg + "\n" + event.getClient().getSuccess() + "**" + loadPlaylist(playlist, track) + "** tracks have been added to the queue!").queue();
                                 else
                                     m.editOriginal(addMsg).queue();
                             }).setFinalAction(m ->
@@ -480,14 +481,14 @@ public class PlayCmd extends MusicCommand {
                 } else {
                     int count = loadPlaylist(playlist, null);
                     if (count == 0) {
-                        m.editOriginal(FormatUtil.filter(event.getClient().getWarning() + " このプレイリスト内" + (playlist.getName() == null ? "" : "(**" + playlist.getName()
-                                + "**) ") + "は、許可された最大長より長いです。(`" + bot.getConfig().getMaxTime() + "`)")).queue();
+                        m.editOriginal(FormatUtil.filter(event.getClient().getWarning() + " This playlist" + (playlist.getName() == null ? "" : "(**" + playlist.getName()
+                                + "**) ") + " contains tracks that exceed the maximum allowed length. (`" + bot.getConfig().getMaxTime() + "`)")).queue();
                     } else {
                         m.editOriginal(FormatUtil.filter(event.getClient().getSuccess()
-                                + (playlist.getName() == null ? "再生リスト" : "再生リスト **" + playlist.getName() + "**") + " の `"
-                                + playlist.getTracks().size() + "` 曲を再生待ちに追加しました。"
-                                + (count < playlist.getTracks().size() ? "\n" + event.getClient().getWarning() + " 許可されている最大長より長いトラック (`"
-                                + bot.getConfig().getMaxTime() + "`) 省略されています。" : ""))).queue();
+                                + (playlist.getName() == null ? "Playlist" : "Playlist **" + playlist.getName() + "**") + " added `"
+                                + playlist.getTracks().size() + "` tracks to the queue."
+                                + (count < playlist.getTracks().size() ? "\n" + event.getClient().getWarning() + " Tracks exceeding the allowed maximum length (`"
+                                + bot.getConfig().getMaxTime() + "`) were omitted." : ""))).queue();
                     }
                 }
             }
@@ -495,7 +496,7 @@ public class PlayCmd extends MusicCommand {
             @Override
             public void noMatches() {
                 if (ytsearch)
-                    m.editOriginal(FormatUtil.filter(event.getClient().getWarning() + " の検索結果はありません `" + event.getOption("input").getAsString() + "`.")).queue();
+                    m.editOriginal(FormatUtil.filter(event.getClient().getWarning() + " No search results found for `" + event.getOption("input").getAsString() + "`.")).queue();
                 else
                     bot.getPlayerManager().loadItemOrdered(event.getGuild(), "ytsearch:" + event.getOption("input").getAsString(), new SlashResultHandler(m, event, true));
             }
@@ -503,10 +504,10 @@ public class PlayCmd extends MusicCommand {
             @Override
             public void loadFailed(FriendlyException throwable) {
                 if (throwable.severity == Severity.COMMON) {
-                    m.editOriginal(event.getClient().getError() + " 読み込み中にエラーが発生しました: " + throwable.getMessage()).queue();
+                    m.editOriginal(event.getClient().getError() + " Error occurred while loading: " + throwable.getMessage()).queue();
                 } else {
 
-                    m.editOriginal(event.getClient().getError() + "曲の読み込み中にエラーが発生しました。").queue();
+                    m.editOriginal(event.getClient().getError() + " Error occurred while loading track.").queue();
                 }
             }
         }
@@ -519,12 +520,12 @@ public class PlayCmd extends MusicCommand {
             this.name = "playlist";
             this.aliases = new String[]{"pl"};
             this.arguments = "<name>";
-            this.help = "提供された再生リストを再生します";
+            this.help = "Play the provided playlist";
             this.beListening = true;
             this.bePlaying = false;
 
             List<OptionData> options = new ArrayList<>();
-            options.add(new OptionData(OptionType.STRING, "name", "プレイリスト名", true));
+            options.add(new OptionData(OptionType.STRING, "name", "Playlist name", true));
             this.options = options;
         }
 
@@ -532,27 +533,27 @@ public class PlayCmd extends MusicCommand {
         public void doCommand(CommandEvent event) {
             String guildId = event.getGuild().getId();
             if (event.getArgs().isEmpty()) {
-                event.reply(event.getClient().getError() + "再生リスト名を含めてください。");
+                event.reply(event.getClient().getError() + " Please provide a playlist name.");
                 return;
             }
             Playlist playlist = bot.getPlaylistLoader().getPlaylist(guildId, event.getArgs());
             if (playlist == null) {
-                event.replyError("`" + event.getArgs() + ".txt`を見つけられませんでした ");
+                event.replyError("Could not find `" + event.getArgs() + ".txt`");
                 return;
             }
-            event.getChannel().sendMessage(":calling: 再生リスト **" + event.getArgs() + "**を読み込んでいます... (" + playlist.getItems().size() + " 曲)").queue(m ->
+            event.getChannel().sendMessage(":calling: Loading playlist **" + event.getArgs() + "**... (" + playlist.getItems().size() + " tracks)").queue(m ->
             {
                 AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
                 playlist.loadTracks(bot.getPlayerManager(), (at) -> handler.addTrack(new QueuedTrack(at, event.getAuthor())), () -> {
                     StringBuilder builder = new StringBuilder(playlist.getTracks().isEmpty()
-                            ? event.getClient().getWarning() + " 楽曲がロードされていません。"
-                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "**曲読み込みました。");
+                            ? event.getClient().getWarning() + " No tracks were loaded."
+                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "** tracks loaded.");
                     if (!playlist.getErrors().isEmpty())
-                        builder.append("\n以下の楽曲をロードできませんでした:");
+                        builder.append("\nThe following tracks could not be loaded:");
                     playlist.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1).append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                     String str = builder.toString();
                     if (str.length() > 2000)
-                        str = str.substring(0, 1994) + " (以下略)";
+                        str = str.substring(0, 1994) + " (truncated)";
                     m.editMessage(FormatUtil.filter(str)).queue();
                 });
             });
@@ -566,22 +567,22 @@ public class PlayCmd extends MusicCommand {
 
             Playlist playlist = bot.getPlaylistLoader().getPlaylist(guildId, name);
             if (playlist == null) {
-                event.reply(event.getClient().getError() + "`" + name + ".txt`を見つけられませんでした ").queue();
+                event.reply(event.getClient().getError() + "`" + name + ".txt` could not be found ").queue();
                 return;
             }
-            event.reply(":calling: 再生リスト **" + name + "**を読み込んでいます... (" + playlist.getItems().size() + " 曲)").queue(m ->
+            event.reply(":calling: Loading playlist **" + name + "**... (" + playlist.getItems().size() + " tracks)").queue(m ->
             {
                 AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
                 playlist.loadTracks(bot.getPlayerManager(), (at) -> handler.addTrack(new QueuedTrack(at, event.getUser())), () -> {
                     StringBuilder builder = new StringBuilder(playlist.getTracks().isEmpty()
-                            ? event.getClient().getWarning() + " 楽曲がロードされていません。"
-                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "**曲読み込みました。");
+                            ? event.getClient().getWarning() + " No tracks were loaded."
+                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "** tracks loaded.");
                     if (!playlist.getErrors().isEmpty())
-                        builder.append("\n以下の楽曲をロードできませんでした:");
+                        builder.append("\nThe following tracks could not be loaded:");
                     playlist.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1).append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                     String str = builder.toString();
                     if (str.length() > 2000)
-                        str = str.substring(0, 1994) + " (以下略)";
+                        str = str.substring(0, 1994) + " (truncated)";
                     m.editOriginal(FormatUtil.filter(str)).queue();
                 });
             });
@@ -594,12 +595,12 @@ public class PlayCmd extends MusicCommand {
             this.name = "mylist";
             this.aliases = new String[]{"ml"};
             this.arguments = "<name>";
-            this.help = "マイリストを再生します";
+            this.help = "Play the specified mylist.";
             this.beListening = true;
             this.bePlaying = false;
 
             List<OptionData> options = new ArrayList<>();
-            options.add(new OptionData(OptionType.STRING, "name", "マイリスト名", true));
+            options.add(new OptionData(OptionType.STRING, "name", "Mylist name", true));
             this.options = options;
         }
 
@@ -607,28 +608,28 @@ public class PlayCmd extends MusicCommand {
         public void doCommand(CommandEvent event) {
             String userId = event.getAuthor().getId();
             if (event.getArgs().isEmpty()) {
-                event.reply(event.getClient().getError() + " マイリスト名を含めてください。");
+                event.reply(event.getClient().getError() + " Please include the playlist name.");
                 return;
             }
             MylistLoader.Playlist playlist = bot.getMylistLoader().getPlaylist(userId, event.getArgs());
             if (playlist == null) {
-                event.replyError("`" + event.getArgs() + ".txt `を見つけられませんでした ");
+                event.replyError("Could not find `" + event.getArgs() + ".txt`");
                 return;
             }
-            event.getChannel().sendMessage(":calling: マイリスト**" + event.getArgs() + "**を読み込んでいます... (" + playlist.getItems().size() + " 曲)").queue(m ->
+            event.getChannel().sendMessage(":calling: Loading mylist **" + event.getArgs() + "**... (" + playlist.getItems().size() + " tracks)").queue(m ->
             {
                 AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
                 playlist.loadTracks(bot.getPlayerManager(), (at) -> handler.addTrack(new QueuedTrack(at, event.getAuthor())), () -> {
                     StringBuilder builder = new StringBuilder(playlist.getTracks().isEmpty()
-                            ? event.getClient().getWarning() + " 楽曲がロードされていません。"
-                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "**曲、読み込みました。");
+                            ? event.getClient().getWarning() + " No tracks were loaded."
+                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "** tracks, loaded.");
                     if (!playlist.getErrors().isEmpty())
-                        builder.append("\n以下の楽曲をロードできませんでした:");
-                    playlist.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1)
-                            .append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
+                        builder.append("\nThe following tracks could not be loaded:");
+                    playlist.getErrors().forEach(err -> builder.append("\n`[")
+                            .append(err.getIndex() + 1).append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                     String str = builder.toString();
                     if (str.length() > 2000)
-                        str = str.substring(0, 1994) + " (以下略)";
+                        str = str.substring(0, 1994) + " (truncated)";
                     m.editMessage(FormatUtil.filter(str)).queue();
                 });
             });
@@ -642,23 +643,23 @@ public class PlayCmd extends MusicCommand {
 
             MylistLoader.Playlist playlist = bot.getMylistLoader().getPlaylist(userId, name);
             if (playlist == null) {
-                event.reply(event.getClient().getError() + "`" + name + ".txt `を見つけられませんでした ").queue();
+                event.reply(event.getClient().getError() + "`" + name + ".txt `could not be found").queue();
                 return;
             }
-            event.reply(":calling: マイリスト**" + name + "**を読み込んでいます... (" + playlist.getItems().size() + " 曲)").queue(m ->
+            event.reply(":calling: Loading mylist **" + name + "**... (" + playlist.getItems().size() + " tracks)").queue(m ->
             {
                 AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
                 playlist.loadTracks(bot.getPlayerManager(), (at) -> handler.addTrack(new QueuedTrack(at, event.getUser())), () -> {
                     StringBuilder builder = new StringBuilder(playlist.getTracks().isEmpty()
-                            ? event.getClient().getWarning() + " 楽曲がロードされていません。"
-                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "**曲、読み込みました。");
+                            ? event.getClient().getWarning() + " No tracks were loaded."
+                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "** tracks, loaded.");
                     if (!playlist.getErrors().isEmpty())
-                        builder.append("\n以下の楽曲をロードできませんでした:");
+                        builder.append("\nThe following tracks could not be loaded:");
                     playlist.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1)
                             .append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                     String str = builder.toString();
                     if (str.length() > 2000)
-                        str = str.substring(0, 1994) + " (以下略)";
+                        str = str.substring(0, 1994) + " (truncated)";
                     m.editOriginal(FormatUtil.filter(str)).queue();
                 });
             });
@@ -671,40 +672,40 @@ public class PlayCmd extends MusicCommand {
             this.name = "publist";
             this.aliases = new String[]{"pul"};
             this.arguments = "<name>";
-            this.help = "公開リストを再生します";
+            this.help = "Play a public list";
             this.beListening = true;
             this.bePlaying = false;
 
             List<OptionData> options = new ArrayList<>();
-            options.add(new OptionData(OptionType.STRING, "name", "公開リスト名", true));
+            options.add(new OptionData(OptionType.STRING, "name", "Playlist name", true));
             this.options = options;
         }
 
         @Override
         public void doCommand(CommandEvent event) {
             if (event.getArgs().isEmpty()) {
-                event.reply(event.getClient().getError() + " 再生リスト名を含めてください。");
+                event.reply(event.getClient().getError() + " Please include the playlist name.");
                 return;
             }
             PubliclistLoader.Playlist playlist = bot.getPublistLoader().getPlaylist(event.getArgs());
             if (playlist == null) {
-                event.replyError("`" + event.getArgs() + ".txt `を見つけられませんでした ");
+                event.replyError("Could not find `" + event.getArgs() + ".txt` ");
                 return;
             }
-            event.getChannel().sendMessage(":calling: 再生リスト**" + event.getArgs() + "**を読み込んでいます... (" + playlist.getItems().size() + " 曲)").queue(m ->
+            event.getChannel().sendMessage(":calling: Loading playlist **" + event.getArgs() + "**... (" + playlist.getItems().size() + " tracks)").queue(m ->
             {
                 AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
                 playlist.loadTracks(bot.getPlayerManager(), (at) -> handler.addTrack(new QueuedTrack(at, event.getAuthor())), () -> {
                     StringBuilder builder = new StringBuilder(playlist.getTracks().isEmpty()
-                            ? event.getClient().getWarning() + " 楽曲がロードされていません。"
-                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "**曲、読み込みました。");
+                            ? event.getClient().getWarning() + " No tracks were loaded."
+                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "** tracks loaded.");
                     if (!playlist.getErrors().isEmpty())
-                        builder.append("\n以下の楽曲をロードできませんでした:");
+                        builder.append("\nThe following tracks could not be loaded:");
                     playlist.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1)
                             .append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                     String str = builder.toString();
                     if (str.length() > 2000)
-                        str = str.substring(0, 1994) + " (以下略)";
+                        str = str.substring(0, 1994) + " (truncated)";
                     m.editMessage(FormatUtil.filter(str)).queue();
                 });
             });
@@ -715,23 +716,23 @@ public class PlayCmd extends MusicCommand {
             String name = event.getOption("name").getAsString();
             PubliclistLoader.Playlist playlist = bot.getPublistLoader().getPlaylist(name);
             if (playlist == null) {
-                event.reply(event.getClient().getError() + "`" + name + ".txt `を見つけられませんでした ").queue();
+                event.reply(event.getClient().getError() + "`" + name + ".txt `could not be found ").queue();
                 return;
             }
-            event.reply(":calling: 再生リスト**" + name + "**を読み込んでいます... (" + playlist.getItems().size() + " 曲)").queue(m ->
+            event.reply(":calling: Loading playlist **" + name + "**... (" + playlist.getItems().size() + " tracks)").queue(m ->
             {
                 AudioHandler handler = (AudioHandler) event.getGuild().getAudioManager().getSendingHandler();
                 playlist.loadTracks(bot.getPlayerManager(), (at) -> handler.addTrack(new QueuedTrack(at, event.getUser())), () -> {
                     StringBuilder builder = new StringBuilder(playlist.getTracks().isEmpty()
-                            ? event.getClient().getWarning() + " 楽曲がロードされていません。"
-                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "**曲、読み込みました。");
+                            ? event.getClient().getWarning() + " No tracks were loaded."
+                            : event.getClient().getSuccess() + "**" + playlist.getTracks().size() + "** tracks, loaded.");
                     if (!playlist.getErrors().isEmpty())
-                        builder.append("\n以下の楽曲をロードできませんでした:");
+                        builder.append("\nThe following tracks could not be loaded:");
                     playlist.getErrors().forEach(err -> builder.append("\n`[").append(err.getIndex() + 1)
                             .append("]` **").append(err.getItem()).append("**: ").append(err.getReason()));
                     String str = builder.toString();
                     if (str.length() > 2000)
-                        str = str.substring(0, 1994) + " (以下略)";
+                        str = str.substring(0, 1994) + " (truncated)";
                     m.editOriginal(FormatUtil.filter(str)).queue();
                 });
             });

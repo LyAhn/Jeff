@@ -34,12 +34,12 @@ public class NicoSearchCmd extends MusicCommand {
         this.aliases = bot.getConfig().getAliases(this.name);
         this.beListening = true;
         this.bePlaying = false;
-        this.arguments = "<検索語句>";
-        this.help = "指定した文字列を使用してニコニコ動画上の動画を検索します。";
+        this.arguments = "<Search phrase>";
+        this.help = "Searches for videos on Nico Nico Douga using the specified phrase.";
         this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
 
         List<OptionData> options = new ArrayList<>();
-        options.add(new OptionData(OptionType.STRING, "input", "検索語句", true));
+        options.add(new OptionData(OptionType.STRING, "input", "Search phrase", true));
         this.options = options;
     }
 
@@ -47,16 +47,16 @@ public class NicoSearchCmd extends MusicCommand {
     public void doCommand(CommandEvent event) {
         boolean isOwner = event.getAuthor().getIdLong() == bot.getConfig().getOwnerId();
         if (!bot.getConfig().isNicoNicoEnabled()) {
-            event.reply("ニコニコ動画の機能が有効になっていません。\n" +
-                    (isOwner ? "" : "Botの作成者に") + "config.txtの`useniconico = false`を`useniconico = true`に変更" + (isOwner ? "してください" : "するよう頼んでください") + "。");
+            event.reply("Niconico video functionality is not enabled yet.\n" +
+                    (isOwner ? "" : "Please ask the owner of the bot") + " to change config.txt's `useniconico = false` to `useniconico = true` " + (isOwner ? "for you" : "so you should ask them to do it") + ".");
             return;
         }
 
         if (event.getArgs().isEmpty()) {
-            event.reply("使用法: **`" + event.getClient().getPrefix() + this.name + " " + this.arguments + "`**");
+            event.reply("Usage: **`" + event.getClient().getPrefix() + this.name + " " + this.arguments + "`**");
         } else {
-            Message m = event.getChannel().sendMessage(bot.getConfig().getSearching() + " ニコニコ動画で " + event.getArgs() + " を検索しています\n" +
-                    "**(注: 一部再生できない動画があります。)**").complete();
+            Message m = event.getChannel().sendMessage(bot.getConfig().getSearching() + " Searching Niconico for " + event.getArgs() + " \n" +
+                    "**(NOTE: Some videos may not be playable.)**").complete();
             LinkedList<nicoVideoSearchResult> results = niconicoAPI.searchVideo(event.getArgs(), 5, true);
             if (results.size() == 0) {
                 m.editMessage(event.getArgs() + " の検索結果はありません。").queue();
@@ -70,7 +70,7 @@ public class NicoSearchCmd extends MusicCommand {
                     .setEventWaiter(bot.getWaiter())
                     .setTimeout(1, TimeUnit.MINUTES)
                     .setCancel(msg -> msg.delete().complete())
-                    .setText(FormatUtil.filter(event.getClient().getSuccess() + "`" + event.getArgs() + "` の検索結果:"))
+                    .setText(FormatUtil.filter(event.getClient().getSuccess() + "`" + event.getArgs() + "` Search results:"))
                     .setSelection((msg, sel) -> {
                         nicoVideoSearchResult selectedResultVideo = results.get((sel - 1));
                         System.out.println("URL = " + selectedResultVideo.getWatchUrl() + ", title = " + selectedResultVideo.getTitle());
@@ -86,18 +86,18 @@ public class NicoSearchCmd extends MusicCommand {
     public void doCommand(SlashCommandEvent event) {
         boolean isOwner = event.getUser().getIdLong() == bot.getConfig().getOwnerId();
         if (!bot.getConfig().isNicoNicoEnabled()) {
-            event.reply("ニコニコ動画の機能が有効になっていません。\n" +
-                    (isOwner ? "" : "Botの作成者に") + "config.txtの`useniconico = false`を`useniconico = true`に変更" + (isOwner ? "してください" : "するよう頼んでください") + "。").queue();
+            event.reply("Niconico video functionality is not enabled yet.\n" +
+                    (isOwner ? "" : "Please ask the owner of the bot") + " to change config.txt's `useniconico = false` to `useniconico = true` " + (isOwner ? "for you" : "so you should ask them to do it") + ".").queue();
             return;
         }
 
         String input = event.getOption("input").getAsString();
 
-        event.reply(bot.getConfig().getSearching() + " ニコニコ動画で " + input + " を検索しています\n" +
-                "**(注: 一部再生できない動画があります。)**").queue(m -> {
+        event.reply(bot.getConfig().getSearching() + " Searching Niconico for " + input + " \n" +
+                "**(NOTE: Some videos may not be playable.)**").queue(m -> {
             LinkedList<nicoVideoSearchResult> results = niconicoAPI.searchVideo(input, 5, true);
             if (results.size() == 0) {
-                m.editOriginal(input + " の検索結果はありません。").queue();
+                m.editOriginal(input + " Search results are empty.").queue();
                 return;
             }
 

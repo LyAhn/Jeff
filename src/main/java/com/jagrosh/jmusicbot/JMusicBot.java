@@ -84,21 +84,21 @@ public class JMusicBot {
         // check deprecated nogui mode (new way of setting it is -Dnogui=true)
         for (String arg : args)
             if ("-nogui".equalsIgnoreCase(arg)) {
-                prompt.alert(Prompt.Level.WARNING, "GUI", "-noguiフラグは廃止予定です。 "
-                        + "jarの名前の前に-Dnogui = trueフラグを使用してください。 例：java -jar -Dnogui=true JMusicBot.jar");
+                prompt.alert(Prompt.Level.WARNING, "GUI", "The -nogui flag is deprecated. "
+                        + "Use the -Dnogui=true flag before the name of the jar file. For example: java -jar -Dnogui=true JMusicBot.jar");
             } else if ("-nocheckupdates".equalsIgnoreCase(arg)) {
                 CHECK_UPDATE = false;
-                log.info("アップデートチェックを無効にしました");
+                log.info("Disabling update check");
             } else if ("-auditcommands".equalsIgnoreCase(arg)) {
                 COMMAND_AUDIT_ENABLED = true;
-                log.info("実行されたコマンドの記録を有効にしました。");
+                log.info("Enabling logging of executed commands.");
             }
 
         // get and check latest version
         String version = OtherUtil.checkVersion(prompt);
 
         if (!System.getProperty("java.vm.name").contains("64"))
-            prompt.alert(Prompt.Level.WARNING, "Java Version", "サポートされていないJavaバージョンを使用しています。64ビット版のJavaを使用してください。");
+            prompt.alert(Prompt.Level.WARNING, "Java Version", "You are using an unsupported Java version. Please use a 64-bit version of Java.");
 
         // load config
         BotConfig config = new BotConfig(prompt);
@@ -110,7 +110,7 @@ public class JMusicBot {
 
         if (config.getAuditCommands()) {
             COMMAND_AUDIT_ENABLED = true;
-            log.info("実行されたコマンドの記録を有効にしました。");
+            log.info("Recording of executed commands has been enabled.");
         }
 
         // set up the listener
@@ -120,8 +120,8 @@ public class JMusicBot {
         Bot.INSTANCE = bot;
 
         AboutCommand aboutCommand = new AboutCommand(Color.BLUE.brighter(),
-                "[JMusicBot JP(v" + version + ")](https://github.com/Cosgy-Dev/MusicBot-JP-java)",
-                new String[]{"高品質の音楽再生", "FairQueue™テクノロジー", "自分で簡単にホスト"},
+                "[Jeff(v" + version + ")](https://github.com/Cosgy-Dev/MusicBot-JP-java)",
+                new String[]{"High-quality music playback", "FairQueue™ technology", "Easily host yourself"},
                 RECOMMENDED_PERMS);
         aboutCommand.setIsAuthor(false);
         aboutCommand.setReplacementCharacter("\uD83C\uDFB6"); // 🎶
@@ -214,8 +214,8 @@ public class JMusicBot {
         if (config.getStatus() != OnlineStatus.UNKNOWN)
             cb.setStatus(config.getStatus());
         if (config.getGame() == null)
-            cb.setActivity(Activity.playing(config.getPrefix() + config.getHelp() + "でヘルプを確認"));
-        else if (config.getGame().getName().toLowerCase().matches("(none|なし)")) {
+            cb.setActivity(Activity.playing(config.getPrefix() + config.getHelp() + " for help"));
+        else if (config.getGame().getName().toLowerCase().matches("(none)")) {
             cb.setActivity(null);
             nogame = true;
         } else
@@ -226,21 +226,21 @@ public class JMusicBot {
                 bot.setGUI(gui);
                 gui.init();
             } catch (Exception e) {
-                log.error("GUIを開くことができませんでした。次の要因が考えられます:\n"
-                        + "サーバー上で実行している\n"
-                        + "画面がない環境下で実行している\n"
-                        + "このエラーを非表示にするには、 -Dnogui=true フラグを使用してGUIなしモードで実行してください。");
+                log.error("Unable to start GUI. Possible reasons include:\n"
+                        + "Running on a server\n"
+                        + "Running in a headless environment\n"
+                        + "To hide this error, run with -Dnogui=true flag to start in headless mode.");
             }
         }
 
-        log.info(config.getConfigLocation() + " から設定を読み込みました");
+        log.info(config.getConfigLocation() + " from reading settings");
 
         // attempt to log in and start
         try {
             JDA jda = JDABuilder.create(config.getToken(), Arrays.asList(INTENTS))
                     .enableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
                     .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS, CacheFlag.EMOJI, CacheFlag.ONLINE_STATUS)
-                    .setActivity(nogame ? null : Activity.playing("ロード中..."))
+                    .setActivity(nogame ? null : Activity.playing("Loading..."))
                     .setStatus(config.getStatus() == OnlineStatus.INVISIBLE || config.getStatus() == OnlineStatus.OFFLINE
                             ? OnlineStatus.INVISIBLE : OnlineStatus.DO_NOT_DISTURB)
                     .addEventListeners(cb.build(), waiter, new Listener(bot))
@@ -251,7 +251,7 @@ public class JMusicBot {
             String unsupportedReason = OtherUtil.getUnsupportedBotReason(jda);
             if (unsupportedReason != null)
             {
-                prompt.alert(Prompt.Level.ERROR, "JMusicBot", "このDiscordボットユーザーではJMusicBotを実行できません: " + unsupportedReason);
+                prompt.alert(Prompt.Level.ERROR, "JMusicBot", "This JMusicBot bot user cannot run JMusicBot: " + unsupportedReason);
                 try{ Thread.sleep(5000);}catch(InterruptedException ignored){} // this is awful but until we have a better way...
                 jda.shutdown();
                 System.exit(1);
@@ -262,21 +262,21 @@ public class JMusicBot {
             // message content intent
             if(!"@mention".equals(config.getPrefix()))
             {
-                prompt.alert(Prompt.Level.INFO, "JMusicBot", "現在、カスタム接頭辞が設定されています。 "
-                        + "カスタム接頭辞が機能しない場合は、「MESSAGE CONTENT INTENT」が有効になっていることを確認してください。"
+                prompt.alert(Prompt.Level.INFO, "JMusicBot", "Currently, a custom prefix is set. "
+                        + "Please ensure that the 'MESSAGE CONTENT INTENT' is enabled, as custom prefixes may not work without it."
                         + "https://discord.com/developers/applications/" + jda.getSelfUser().getId() + "/bot");
             }
 
         }
         catch (InvalidTokenException ex) {
             prompt.alert(Prompt.Level.ERROR, "JMusicBot", ex + "\n" +
-                    "正しい設定ファイルを編集していることを確認してください。Botトークンでのログインに失敗しました。" +
-                    "正しいBotトークンを入力してください。(CLIENT SECRET ではありません!)\n" +
-                    "設定ファイルの場所: " + config.getConfigLocation());
+                    "Please ensure you are editing the correct configuration file. Login with Bot token failed. " +
+                    "Please enter a valid Bot token (not CLIENT SECRET!)\n" +
+                    "Configuration file location: " + config.getConfigLocation());
             System.exit(1);
         } catch (IllegalArgumentException ex) {
-            prompt.alert(Prompt.Level.ERROR, "JMusicBot", "設定の一部が無効です:" + ex + "\n" +
-                    "設定ファイルの場所: " + config.getConfigLocation());
+            prompt.alert(Prompt.Level.ERROR, "JMusicBot", "Some configuration options are invalid:" + ex + "\n" +
+                    "Config file location: " + config.getConfigLocation());
             System.exit(1);
         }
 

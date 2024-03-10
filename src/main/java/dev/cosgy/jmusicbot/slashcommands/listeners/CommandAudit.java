@@ -14,15 +14,17 @@ public class CommandAudit implements CommandListener {
      * Called when a {@link Command Command} is triggered
      * by a {@link CommandEvent CommandEvent}.
      *
+     * Called when a {@link Command Command} is triggered
+     * by a {@link CommandEvent CommandEvent}.
+     *
      * @param event   The CommandEvent that triggered the Command
-     * @param command 実行されたコマンドオブジェクト
+     * @param command The executed command object
      */
     @Override
     public void onCommand(CommandEvent event, Command command) {
         if (JMusicBot.COMMAND_AUDIT_ENABLED) {
             Logger logger = LoggerFactory.getLogger("CommandAudit");
-            String textFormat = event.isFromType(ChannelType.PRIVATE) ? "%s%s で %s#%s (%s) がコマンド %s を実行しました" : "%s の #%s で %s#%s (%s) がコマンド %s を実行しました";
-
+            String textFormat = event.isFromType(ChannelType.PRIVATE) ? "%s%s executed command %s#%s (%s)" : "%s's #%s executed command %s#%s (%s)";
             logger.info(String.format(textFormat,
                     event.isFromType(ChannelType.PRIVATE) ? "DM" : event.getGuild().getName(),
                     event.isFromType(ChannelType.PRIVATE) ? "" : event.getTextChannel().getName(),
