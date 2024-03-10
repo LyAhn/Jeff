@@ -297,7 +297,7 @@ public class PlayCmd extends MusicCommand {
             super(bot);
             this.jda = bot.getJDA();
             this.loadingEmoji = bot.getConfig().getLoading();
-            this.name = "request";
+            this.name = "song";
             this.arguments = "<title|URL>";
             this.help = "Request a song.";
             this.aliases = bot.getConfig().getAliases(this.name);
