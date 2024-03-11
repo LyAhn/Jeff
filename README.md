@@ -14,7 +14,7 @@ Jeff uses a simple and easy-to-use UI. Setup and launch are also easy.
 
 * Easy to use (Make sure Java is installed)
 * Load songs quickly
-* No need for external keys (Except for Discord's Bot Token)
+* No need for external keys (Except for Discord's Bot Token & Spotify Web API)
 * Smooth and lag-free play
 * Can apply a specific DJ role to users
 * Simple and easy-to-use UI
