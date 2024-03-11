@@ -34,7 +34,7 @@ To run this bot yourself, please refer to [Cosgy Dev official page](https://www.
 If you want to suggest changes to the bot's features, recommend customizations, or report a bug, please open an Issue in this repository or join the [Discord server](https://discord.gg/RBpkHxf)
 (Note: Feature requests that require additional API keys will not be accepted, except for non-music features).
 <br>If you like this bot, please star the libraries used by this bot:<br>[JDA](https://github.com/DV8FromTheWorld/JDA)
-and [lavaplayer]([https://github.com/sedmelluq/lavaplayer](https://github.com/lavalink-devs/lavaplayer))
+and [lavaplayer](https://github.com/lavalink-devs/lavaplayer)
 
 # Examples of commands
 
