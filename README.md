@@ -6,9 +6,9 @@
 
 # Jeff
 
-Jeff uses a simple and easy-to-use UI. Setup and launch are also easy.
+Jeff uses a simple and easy-to-use UI. Setup and launch are also easy. Forked from [JMusicBot-JP](https://github.com/Cosgy-Dev/JMusicBot-JP) which was originally forked from [JMusicBot](https://github.com/jagrosh/MusicBot) to bring slash commands to an english version.
 
-[![Setup](http://i.imgur.com/VvXYp5j.png)](https://www.cosgy.dev/2019/09/06/jmusicbot-setup/)
+[![Setup](http://i.imgur.com/VvXYp5j.png)](https://jmusicbot.com/setup)
 
 # Functionality
 
@@ -26,7 +26,7 @@ Jeff uses a simple and easy-to-use UI. Setup and launch are also easy.
 
 # Setup
 
-To run this bot yourself, please refer to [Cosgy Dev official page](https://www.cosgy.dev/2019/09/06/jmusicbot-setup/) - Will be updated
+To run this bot yourself, please refer to [JMusicBot Setup](https://jmusicbot.com/setup) 
 
 # Questions/Suggestions/Bug Reports
 
