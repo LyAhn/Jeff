@@ -269,12 +269,15 @@ public class JMusicBot {
 
         }
         catch (InvalidTokenException ex) {
+            //ex.getCause().getMessage();
             prompt.alert(Prompt.Level.ERROR, "JMusicBot", ex + "\n" +
                     "Please ensure you are editing the correct configuration file. Login with Bot token failed. " +
                     "Please enter a valid Bot token (not CLIENT SECRET!)\n" +
                     "Configuration file location: " + config.getConfigLocation());
             System.exit(1);
+            
         } catch (IllegalArgumentException ex) {
+
             prompt.alert(Prompt.Level.ERROR, "JMusicBot", "Some configuration options are invalid:" + ex + "\n" +
                     "Config file location: " + config.getConfigLocation());
             System.exit(1);
